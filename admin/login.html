@@ -1,0 +1,35 @@
+#!/usr/local/bin/php -d disable_functions=""
+<?php
+include_once dirname(__FILE__) . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . 'plugin.php';
+
+$menu = new Menu('admin');
+echo pasteAssets();
+echo $menu->render('');
+
+$domain = getParam('domain');
+
+if (!$domain){
+	echo '<div class="alert alert-danger">No domain provided</div>';
+	die();
+}
+
+try {
+	$conf = new Configuration();
+	$api = new SpamExperts_API( $conf->get('api_hostname'), $conf->get('api_username'), $conf->get('api_password') );
+
+	if ($conf->get('add_domain_during_login')){
+		$api->protectDomains( array($domain), $conf, new DirectAdmin_API() );
+	}
+
+	$res = $api->login( $domain );
+	$msg = $res ? 'Logging for '.$domain.' successful. Please wait...' : 'Unable to get login token for ' . $domain;
+
+} catch (Exception $e){
+	echo '<div class="alert alert-danger">'.$e->getMessage().'</div>';
+	die();
+}
+
+?>
+
+<div class="alert alert-success">Please Wait...</div>
+<meta http-equiv="refresh" content="0; url=<?php echo $conf->get('spampanel_url') . '/?authticket=' . $res; ?>" />

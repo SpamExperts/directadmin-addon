@@ -1,0 +1,33 @@
+#!/usr/local/bin/php -d disable_functions=""
+<?php
+include_once dirname(__FILE__) . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . 'plugin.php';
+
+echo pasteAssets();
+
+$domain = getParam('domain');
+
+if (!$domain){
+	echo '<div class="alert alert-danger">No domain provided</div>';
+	die();
+}
+
+try {
+	$conf = new Configuration();
+	$api = new SpamExperts_API( $conf->get('api_hostname'), $conf->get('api_username'), $conf->get('api_password') );
+	$DAapi = new DirectAdmin_API();
+	
+	if (!$DAapi->isUsersDomain($domain, true))
+		throw new Exception("This domain does not belong to you");
+
+	$res = $api->login( $domain );
+	$msg = $res ? 'Logging for '.$domain.' successful. Please wait...' : 'Unable to get login token for ' . $domain;
+
+} catch (Exception $e){
+	echo '<div class="alert alert-danger">'.$e->getMessage().'</div>';
+	die();
+}
+
+?>
+
+<div class="alert alert-success">Please Wait...</div>
+<meta http-equiv="refresh" content="0; url=<?php echo $conf->get('spampanel_url') . '/?authticket=' . $res; ?>" />

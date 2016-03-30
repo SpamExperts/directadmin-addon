@@ -1,0 +1,123 @@
+#!/usr/local/bin/php -d disable_functions=""
+<?php
+include_once dirname(__FILE__) . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . 'plugin.php';
+echo pasteAssets();
+
+$page			= getParam('page', 1);
+$limit			= getParam('limit', 100);
+$searchDomain	= getParam('searchDomain', '');
+
+try {
+	$api = new DirectAdmin_API();
+	$domains = $api->getAllDomains(array(
+		'page'			=> $page,
+		'limit'			=> $limit,
+		'searchUsername'=> getenv('USERNAME'),
+		'searchDomain'	=> $searchDomain,
+	));
+} catch (Exception $e){
+	echo '<div id="flash_messages"><div class="alert alert-danger">'.$e->getMessage().'</div></div>';
+	die();
+}
+$menu = new Menu('user');
+echo $menu->addLogo();
+?>
+
+<div class="moduleContent">
+	<div id="flash_messages"></div>
+
+	<div class="form-inline" style="margin-bottom:15px;">
+		<div class="form-group">
+			<input type="text" class="form-control" name="searchDomain" placeholder="Enter Domain" value="<?php echo $searchDomain; ?>" />
+		</div>
+		<input type="submit" value="Filter" id="filterDomains" class="btn btn-default" />
+	</div>
+
+	<table class="table">
+		<thead>
+			<tr>
+				<th class="">Domain</th>
+				<th class="">Present in Filter</th>
+				<th class="">Login</th>
+			</tr>
+		</thead>
+		<tbody>
+			<?php foreach ($domains as $domain){ ?>
+				<tr>
+					<td class=""><?php echo ($domain->pointsto ? '<strong title="Points to '.$domain->pointsto.'">P:</strong> ' : '') . $domain->domain; ?></td>
+					<td class=""><a href="" class="checkStatus" data-domain="<?php echo $domain->domain; ?>">Check status</a></td>
+					<td class=""><a href="<PLUGINNAME>/login.html?domain=<?php echo $domain->domain; ?>" target="_blank" class="_loginSpamExperts" data-domain="<?php echo $domain->domain; ?>">Login</a></td>
+				</tr>
+			<?php } ?>
+			<?php if (empty($domains)){ ?>
+				<tr>
+					<td colspan="5">No domains found.</td>
+				</tr>
+			<?php } ?>
+		</tbody>
+	</table>
+
+	<?php
+	echo pastePaginationHtml(DirectAdmin_API::$total, $page, $limit, array(
+		'searchUsername'=> getenv('USERNAME'),
+		'searchDomain'	=> $searchDomain,
+	));
+	?>
+	
+</div>
+
+<script type="text/javascript">
+$(document).ready(function(){
+	$('.paginationItem.current').click(function(){
+		return false;
+	});
+	
+	$('#filterDomains').click(function(){
+		window.location.href = '?searchDomain='+ $('input[name=searchDomain]').val();
+		return false;
+	});
+	
+	// ajax
+	
+	$('.checkStatus').click(function(){
+		var domain = $(this).data('domain');
+		var $td = $(this).closest('td').html('<img src="<PLUGINNAME>/images/ajax-loader.gif" />');
+		$.get('<PLUGINNAME>/ajax.html', {'action': 'checkDomainStatus', 'domain':domain}, function(r){
+			var json = parseAjaxResponse(r);
+			addFlashMsg(json.domainstatus == 1 ? 'success' : 'danger', json.msg, true);
+			$td.html(json.domainstatus == 1 ? '<span class="simple-success">Yes</span>' : '<span class="simple-error">No</span>');
+		});
+		return false;
+	});
+	
+	$('.loginSpamExperts').click(function(){
+		var domain = $(this).data('domain');
+		var $td = $(this).closest('td').html('<img src="<PLUGINNAME>/images/ajax-loader.gif" />');
+		
+		var opennewtab = false;
+		var json = null;
+		$.ajax({
+			url: '<PLUGINNAME>/ajax.html',
+			data: {'action': 'login', 'domain':domain},
+			context: document.body,
+			async:false,
+			success: function(res){
+				json = parseAjaxResponse(res);
+				if (typeof json.token != 'undefined' && json.token != null){
+					$td.html( '<span class="simple-success">Logged In</span>' );
+					opennewtab = true;
+				} else {
+					$td.html( '<span class="simple-error">Error while logging</span>' );
+				}
+			}
+		});
+		
+		if (opennewtab == true){
+			window.open(json.url,'_blank');
+		}
+		
+		return false;
+	});
+	
+});
+</script>

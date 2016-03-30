@@ -1,0 +1,7 @@
+; Setup values needed to DirectAdmin API
+host=127.0.0.1
+port=2222
+; 1 or 0
+secure=0
+username=admin
+password=123

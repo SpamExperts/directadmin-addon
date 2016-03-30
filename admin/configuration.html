@@ -1,0 +1,184 @@
+#!/usr/local/bin/php -d disable_functions=""
+<?php
+include_once dirname(__FILE__) . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . 'plugin.php';
+
+$menu = new Menu('admin');
+echo pasteAssets();
+echo $menu->render('configuration');
+
+$flashMessage = '';
+
+try {
+	$conf = new Configuration();
+	
+	$params = getPOSTValues();
+	if (isset($params['spampanel_url'])){
+		$conf->set('spampanel_url',						$params['spampanel_url']);
+		$conf->set('api_hostname',						$params['api_hostname']);
+		$conf->set('api_username',						$params['api_username']);
+		$conf->set('api_password',						$params['api_password']);
+		$conf->set('primary_mx',						$params['primary_mx']);
+		$conf->set('primary_mx_priority',					$params['primary_mx_priority']);
+		$conf->set('secondary_mx',						$params['secondary_mx']);
+		$conf->set('secondary_mx_priority',					$params['secondary_mx_priority']);
+		$conf->set('tertiary_mx',						$params['tertiary_mx']);
+		$conf->set('tertiary_mx_priority',					$params['tertiary_mx_priority']);
+		$conf->set('automatically_add_domains',			isset($params['automatically_add_domains']) ? 1 : 0);
+		$conf->set('automatically_delete_domains',		isset($params['automatically_delete_domains']) ? 1 : 0);
+		$conf->set('automatically_change_mx',			isset($params['automatically_change_mx']) ? 1 : 0);
+		$conf->set('process_addon_and_parked_domains',	isset($params['process_addon_and_parked_domains']) ? 1 : 0);
+		$conf->set('use_existing_mx_as_routes',			isset($params['use_existing_mx_as_routes']) ? 1 : 0);
+		$conf->set('do_not_protect_remote_domains',		isset($params['do_not_protect_remote_domains']) ? 1 : 0);
+		$conf->set('add_domain_during_login',			isset($params['add_domain_during_login']) ? 1 : 0);
+		
+		$conf->save();
+		$conf = new Configuration();
+		$flashMessage = '<div class="alert alert-success">Configuration has been saved.</div>';
+	}
+
+} catch (Exception $e){
+	echo '<div class="alert alert-danger">'.$e->getMessage().'</div>';
+	die();
+}
+
+?>
+
+<div class="moduleContent">
+	<div id="flash_messages"><?php echo $flashMessage; ?></div>
+
+	<div class="alert alert-info">
+	On this page you can configure the admin settings of the addon.
+	You can hover over the options to see more detailed information about what they do.
+	</div>
+
+	<form class="form-horizontal" method="POST">
+		<div class="form-group">
+			<label for="inputEmail3" class="col-sm-2 control-label">AntiSpam API URL</label>
+			<div class="col-sm-10">
+				<input type="text" class="form-control" name="spampanel_url" value="<?php echo $conf->get('spampanel_url'); ?>" title="URL (textbox, empty by default) to AntiSpam Web Interface" />
+			</div>
+		</div>
+		<div class="form-group">
+			<label for="inputPassword3" class="col-sm-2 control-label">API Hostname</label>
+			<div class="col-sm-10">
+				<input type="text" class="form-control" name="api_hostname" value="<?php echo $conf->get('api_hostname'); ?>" title="This is the hostname of the first antispam server, usually the same as the AntiSpam Web Interface URL unless you're using a CNAME for that." />
+			</div>
+		</div>
+		<div class="form-group">
+			<label for="inputPassword3" class="col-sm-2 control-label">API username</label>
+			<div class="col-sm-10">
+				<input type="text" class="form-control" name="api_username" value="<?php echo $conf->get('api_username'); ?>" title="This is the name of the user that is being used to communicate with the spamfilter. You can only change this at the migration page." />
+			</div>
+		</div>
+		<div class="form-group">
+			<label for="inputPassword3" class="col-sm-2 control-label">API password</label>
+			<div class="col-sm-10">
+				<input type="password" class="form-control" name="api_password" value="<?php echo $conf->get('api_password'); ?>" title="This is the password from the user that is being used to communicate with the spamfilter. Can be left empty once it has been validated." />
+			</div>
+		</div>
+		<div class="form-group">
+			<label for="inputPassword3" class="col-sm-2 control-label">Primary MX</label>
+			<div class="col-sm-8">
+				<input type="text" class="form-control" name="primary_mx" value="<?php echo $conf->get('primary_mx'); ?>" title="This is for the first (virtual) MX record. It can be either your cluster's first server or an other DNS name if you're using Round Robin DNS." />
+			</div>
+                        <div class="col-sm-2" style="width: 14%;">
+				<input type="number" min="1" class="form-control" name="primary_mx_priority" placeholder="10" value="<?php echo $conf->get('primary_mx_priority'); ?>" title="This is priority for the first (virtual) MX record." />
+			</div>
+		</div>
+		<div class="form-group">
+			<label for="inputPassword3" class="col-sm-2 control-label">Secondary MX</label>
+			<div class="col-sm-8">
+				<input type="text" class="form-control" name="secondary_mx" value="<?php echo $conf->get('secondary_mx'); ?>" title="This is for the second (virtual) MX record. It can be either your cluster's second server or an other DNS name if you're using Round Robin DNS." />
+			</div>
+                        <div class="col-sm-2" style="width: 14%;">
+				<input type="number" min="1" class="form-control" name="secondary_mx_priority" placeholder="20" value="<?php echo $conf->get('secondary_mx_priority'); ?>" title="This is priority for the second (virtual) MX record." />
+			</div>
+		</div>
+		<div class="form-group">
+			<label for="inputPassword3" class="col-sm-2 control-label">Tertiary MX</label>
+			<div class="col-sm-8">
+				<input type="text" class="form-control" name="tertiary_mx" value="<?php echo $conf->get('tertiary_mx'); ?>" title="This is for the third (virtual) MX record. It can be either your cluster's third server or an other DNS name if you're using Round Robin DNS." />
+			</div>
+			<div class="col-sm-2" style="width: 14%;">
+				<input type="number" min="1" class="form-control" name="tertiary_mx_priority"  placeholder="30" value="<?php echo $conf->get('tertiary_mx_priority'); ?>" title="This is priority for the third (virtual) MX record." />
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="col-sm-offset-2 col-sm-10">
+				<div class="checkbox">
+					<label>
+						<input type="checkbox" name="automatically_add_domains" <?php echo $conf->get('automatically_add_domains', 1) ? 'checked' : ''; ?> title="Automatically add the local domain to the spamfilter when it is added to this server." />
+						Automatically add domains to the SpamFilter
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="col-sm-offset-2 col-sm-10">
+				<div class="checkbox">
+					<label>
+						<input type="checkbox" name="automatically_delete_domains" <?php echo $conf->get('automatically_delete_domains', 1) ? 'checked' : ''; ?> title="Automatically remove the local domain from the spamfilter when it is removed from this server." />
+						Automatically delete domains from the SpamFilter
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="col-sm-offset-2 col-sm-10">
+				<div class="checkbox">
+					<label>
+						<input type="checkbox" name="automatically_change_mx" <?php echo $conf->get('automatically_change_mx', 1) ? 'checked' : ''; ?> title="Automatically change the MX records for the domains to the virtual MX records when they are being added to the panel or when using bulk protect." />
+						Automatically change the MX records for domains
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="col-sm-offset-2 col-sm-10">
+				<div class="checkbox">
+					<label>
+						<input type="checkbox" name="process_addon_and_parked_domains" <?php echo $conf->get('process_addon_and_parked_domains', 0) ? 'checked' : ''; ?> title="Also process addon and parked domains. The behariour is controlled by other options." />
+						Process domain pointers
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="col-sm-offset-2 col-sm-10">
+				<div class="checkbox">
+					<label>
+						<input type="checkbox" name="use_existing_mx_as_routes" <?php echo $conf->get('use_existing_mx_as_routes', 1) ? 'checked' : ''; ?> title="Use the existing MX records as destination hosts in the spamfilter. Useful if they point to a different server than this one." />
+						Use existing MX records as routes in the SpamFilter
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="form-group">
+			<div class="col-sm-offset-2 col-sm-10">
+				<div class="checkbox">
+					<label>
+						<input type="checkbox" name="do_not_protect_remote_domains" <?php echo $conf->get('do_not_protect_remote_domains', 1) ? 'checked' : ''; ?> title="Skip domains if they are set to 'remote'. This usually happens when a different server is handling the incoming email for the domain" />
+						Do not protect remote domains
+					</label>
+				</div>
+			</div>
+		</div>
+		
+		<div class="form-group">
+			<div class="col-sm-offset-2 col-sm-10">
+				<div class="checkbox">
+					<label>
+						<input type="checkbox" name="add_domain_during_login" <?php echo $conf->get('add_domain_during_login', 1) ? 'checked' : ''; ?> title="If this option is active the addon should check a domain’s presence in the spamfilter upon login attempt and try to add it in case of it’s still missing there." />
+						Add the domain to the spamfilter during login if it does not exist
+					</label>
+				</div>
+			</div>
+		</div>
+
+		<div class="form-group">
+			<div class="col-sm-offset-2 col-sm-10">
+				<button type="submit" class="btn btn-primary">Save Changes</button>
+			</div>
+		</div>
+	</form>
+</div>

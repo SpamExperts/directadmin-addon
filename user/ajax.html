@@ -1,0 +1,73 @@
+#!/usr/local/bin/php -d disable_functions=""
+<?php
+
+include_once dirname(__FILE__) . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . 'plugin.php';
+
+class Ajax_SpamExperts extends Ajax {
+	
+	public function call_checkDomainStatus(){
+		try {
+			if (!$this->_isUsersDomain($this->_params['domain']))
+				$this->sendResponse(false, 'Domain does not belong to you');
+		
+			$api = $this->_getSpamExpertsApi();
+			$res = $api->getDomainStatus( $this->_params['domain'] );
+			$msg = $res ? 'This domain is present in the filter.' : 'This domain is not present in the filter.';
+			$msgColor = $res ? 'green' : 'red';
+			$this->sendResponse(true, '<span style="color:'.$msgColor.'">'.$msg.'</span>', array(
+				'domainstatus' => $res ? 1 : 0
+			));
+			
+		} catch (Exception $e){
+			$this->sendResponse(false, $e->getMessage(), array(
+				'domainstatus' => 0
+			));
+			
+		}
+	}
+	
+	public function call_login(){
+		try {
+			if (!$this->_isUsersDomain($this->_params['domain']))
+				$this->sendResponse(false, 'Domain does not belong to you');
+				
+			$conf = new Configuration();
+			$api = $this->_getSpamExpertsApi();
+			
+			if ($conf->get('add_domain_during_login')){
+				$api->protectDomains( array($this->_params['domain']), $conf, new DirectAdmin_API() );
+			}
+			
+			$res = $api->login( $this->_params['domain'] );
+			$msg = $res ? 'Logging for '.$domain.' successful' : 'Unable to get login token for ' . $domain;
+			$this->sendResponse($res ? true : false, $msg, array(
+				'token' => $res,
+				'url' => $conf->get('spampanel_url') . '/?authticket=' . $res
+			));
+			
+		} catch (Exception $e){
+			$this->sendResponse(false, $e->getMessage());
+		}
+	}
+	
+	protected function _isUsersDomain($domain){
+		$api = new DirectAdmin_API();
+		return $api->isUsersDomain($domain);
+	}
+	
+	
+	
+	private function _getSpamExpertsApi(){
+		$conf = new Configuration();
+		
+		return new SpamExperts_API(
+			$conf->get('api_hostname'),
+			$conf->get('api_username'),
+			$conf->get('api_password')
+		);
+	}
+
+}
+
+$ajax = new Ajax_SpamExperts();
+$ajax->processRequest( getParams() );

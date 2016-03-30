@@ -1,0 +1,69 @@
+; URL to Spampanel a web UI for the control panel
+;spampanel_url=""
+
+; Spampanel API hostname, the URL where to send API requests for the spamfilter options/domains management
+;api_hostname=""
+
+; Username to communicate with the Spampanel API
+;api_username=""
+
+; Password to communicate with the Spampanel API
+;api_password=""
+
+; Primary hostname or an IP address of the spamfiltering cluster
+;primary_mx=""
+
+; Primary MX priority
+;primary_mx_priority=""
+
+; Secondary hostname or an IP address of the spamfiltering cluster
+;secondary_mx=""
+
+; Secondary MX priority
+;secondary_mx_priority=""
+
+; Tertiary hostname or an IP address of the spamfiltering cluster
+;tertiary_mx=""
+
+; Tertiary MX priority
+;tertiary_mx_priority=""
+
+; Automatically add domains to the SpamFilter (active by default) determines
+; should the plugin add new domains into the spamfilter automatically or not.
+; 1 or 0
+;automatically_add_domains=1
+
+; Automatically delete domains from the SpamFilter (checkbox, active by default) determines
+; should the plugin remove obsolete domains from the spamfilter automatically or not.
+; 1 or 0
+;automatically_delete_domains=1
+
+; Automatically change the MX records for domains (active by default) determines
+; should the plugin change domains’ MX records on add/remove events. In
+; case of this option is active, the plugin will set up values of the “Primary MX”,
+; “Secondary MX” and “Secondary MX” as a domain’s new MX records after the domain is successfully added into the spamfilter
+; 1 or 0
+;automatically_change_mx=1
+
+; Process addon and parked domains (inactive by default) determines
+; should the plugin also process secondary domains or not
+; 1 or 0
+;process_addon_and_parked_domains=0
+
+; Use existing MX records as routes in the spamfilter (active by default) each
+; domain in the spamfilter has at least one destination route a hostname where all the
+; clean email should be delivered and it is reasonable to use actual MX records on a
+; domain’s MX records switching as a destination for the clean email. This checkbox
+; enables or disables such behavior
+; 1 or 0
+;use_existing_mx_as_routes=1
+
+; Do not protect remote domains (active by default) if this checkbox is enabled
+; all the “remote” domains (domains which don’t DNShost at this server) should be skipped
+; 1 or 0
+;do_not_protect_remote_domains=1
+
+; Add the domain to the spamfilter during login if it does not exist (active by default) if this option is active,
+; the plugin should check a domain’s presence in the spamfilter upon login attempt and try to add it in case of it’s still missing there.
+; 1 or 0
+;add_domain_during_login=1

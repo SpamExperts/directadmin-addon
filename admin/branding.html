@@ -1,0 +1,67 @@
+#!/usr/local/bin/php -d disable_functions=""
+<?php
+include_once dirname(__FILE__) . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . 'plugin.php';
+
+$menu = new Menu('admin');
+echo pasteAssets();
+echo $menu->render('branding');
+
+$brandNameFlashMessage = '';
+$brandLogoFlashMessage = '';
+    
+$brand = new Branding();
+$params = getPOSTValues();
+
+if(!empty($params['newName'])){ 
+    $response = $brand->setBrandName($params['newName']);
+    if($response['status']=='success'){     
+        $brandNameFlashMessage = '<div class="alert alert-success"><strong>Success!</strong> '.$response['msg'].'</div>';
+    } else {
+        $brandNameFlashMessage = '<div class="alert alert-danger"><strong>Error occured!</strong> '.$response['msg'].'</div>';
+    }
+}
+if(!empty($params['newLogo'])){ 
+    if(!$brand->validateLogo($params['newLogo'])){
+        $brandLogoFlashMessage  = '<div class="alert alert-danger"><strong>Ivalid File!</strong> Logo must have jpeg or jpg extension and cannot have width more than ' . $brand->getMaxLogoWidth(). 'px and height ' . $brand->getMaxLogoHeight() . 'px.</div>';
+    }elseif($brand->setBrandLogo($params['newLogo'])){
+        $brandLogoFlashMessage  = '<div class="alert alert-success"><strong>Success!</strong> Logo changed successfully. Please force browser to reload cache to see changes.</div>';
+    } else {
+        $brandLogoFlashMessage  = '<div class="alert alert-danger"><strong>Error occured!</strong> Logo changing failure!.</div>';      
+    }
+}
+?>
+
+<div class="moduleContent">
+	<div id="flash_messages"><?php echo $brandNameFlashMessage; ?></div>
+	<div id="flash_messages"><?php echo $brandLogoFlashMessage; ?></div>
+
+	<div class="alert alert-info">
+            On this page you can change how the addon looks for the customers.
+	</div>
+        <label for="currentLogo" class="col-sm-2 control-label branding">Current Logo:</label>
+            <div class="col-sm-6 branding">
+                <img src="/CMD_PLUGINS_ADMIN/<PLUGINNAME>/images/logo.jpg" alt="<?php echo $brand->getBrandName(); ?>"/>
+            </div>
+        <div style="clear: both;"></div>
+        <label for="currentName" class="col-sm-2 control-label branding">Current Branding:</label>
+            <div class="col-sm-6 branding">
+                <input type="text" class="form-control disabled" name="currentName" value="<?php echo $brand->getBrandName(); ?>" readonly="readonly"/>
+            </div>
+        <div style="clear: both;"></div>
+        <p class="branding">Setup new branding:</p>
+        <form method="POST" enctype="multipart/form-data" action=''>
+            <div style="clear: both;"></div>
+            <label for="newLogo" class="col-sm-2  control-label branding">Branding Logo:</label>
+                <div class="col-sm-6" style="margin-top:10px; margin-bottom:10px;">
+                    <input type="file" name="newLogo"/>
+                </div>
+            <div style="clear: both;"></div>     
+            <label for="newName" class="col-sm-2  control-label branding">Branding Name:</label>
+                <div class="col-sm-6 branding">
+                    <input type="text" class="form-control" name="newName" value="" placeholder="Please enter new branding name" title="Please Enter here new brandname." />
+                </div>
+            <div style="clear: both;"></div>     
+            <div class="col-sm-offset-2 col-sm-10"><button type="submit" class="btn btn-primary branding">Save Changes</button></div>
+        </form>
+
+</div>

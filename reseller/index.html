@@ -1,0 +1,227 @@
+#!/usr/local/bin/php -d disable_functions=""
+<?php
+include_once dirname(__FILE__) . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . 'plugin.php';
+echo pasteAssets();
+
+$page			= getParam('page', 1);
+$limit			= getParam('limit', 100);
+$searchUsername = getParam('searchUsername', '');
+$searchDomain	= getParam('searchDomain', '');
+
+try {
+	$api = new DirectAdmin_API();
+	$domains = $api->getAllDomains(array(
+		'page'			=> $page,
+		'limit'			=> $limit,
+		'searchUsername'=> $searchUsername,
+		'searchDomain'	=> $searchDomain,
+		'searchReseller'=> getenv('USERNAME'),
+	));
+} catch (Exception $e){
+	echo '<div id="flash_messages"><div class="alert alert-danger">'.$e->getMessage().'</div></div>';
+	die();
+}
+
+$menu = new Menu('reseller');
+echo $menu->addLogo();
+?>
+
+<div class="moduleContent">
+	<div id="flash_messages"></div>
+
+	<div class="form-inline" style="margin-bottom:15px;">
+		<div class="form-group">
+			<input type="text" class="form-control" name="searchDomain" placeholder="Enter Domain" value="<?php echo $searchDomain; ?>" />
+		</div>
+		<div class="form-group">
+			<input type="text" class="form-control" name="searchUsername" placeholder="Enter Username" value="<?php echo $searchUsername; ?>" />
+		</div>
+		<input type="submit" value="Filter" id="filterDomains" class="btn btn-default" />
+	</div>
+
+	<table class="table">
+		<thead>
+			<tr>
+				<th class=""><input type="checkbox" class="checkAll" /></th>
+				<th class="">Domain</th>
+				<th class="">Username</th>
+				<th class="">Present in Filter</th>
+				<th class="">Toggle Protection</th>
+				<th class="">Login</th>
+			</tr>
+		</thead>
+		<tbody>
+			<?php foreach ($domains as $domain){ ?>
+				<tr>
+					<td class=""><input type="checkbox" class="bulkcheck" data-domain="<?php echo $domain->domain;?>" /></td>
+					<td class=""><?php echo ($domain->pointsto ? '<strong title="Points to '.$domain->pointsto.'">P:</strong> ' : '') . $domain->domain; ?></td>
+					<td class=""><?php echo $domain->username; ?></td>
+					<td class=""><a href="" class="checkStatus" data-domain="<?php echo $domain->domain; ?>">Check status</a></td>
+					<td class=""><a href="" class="toggleProtection" data-domain="<?php echo $domain->domain; ?>">Toggle Protection</a></td>
+					<td class=""><a href="<PLUGINNAME>/login.html?domain=<?php echo $domain->domain; ?>" target="_blank" class="_loginSpamExperts" data-domain="<?php echo $domain->domain; ?>">Login</a></td>
+				</tr>
+			<?php } ?>
+			<?php if (empty($domains)){ ?>
+				<tr>
+					<td colspan="5">No domains found.</td>
+				</tr>
+			<?php } ?>
+		</tbody>
+	</table>
+
+	<?php
+	echo pastePaginationHtml(DirectAdmin_API::$total, $page, $limit, array(
+		'searchUsername'=> $searchUsername,
+		'searchDomain'	=> $searchDomain,
+		'searchReseller'=> getenv('USERNAME'),
+	));
+	?>
+
+	<button id="protectSelected" class="btn btn-primary btn-sm">Protect Selected</button>
+	<button id="unprotectSelected" class="btn btn-primary btn-sm">Unprotect Selected</button>
+	
+	<div class="progressContainer">
+		<strong>Progress:</strong>
+		<div class="progress">
+			<div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100">
+			  <span class="sr-only"></span>
+			</div>
+		</div>
+	</div>
+	<div id="bulkActionResult"></div>
+	
+</div>
+
+<script type="text/javascript">
+var domainsParts = [];
+var domainsNumber = 0;
+var domainsDone = 0;
+var domainsAction = '';
+$(document).ready(function(){
+	$('.paginationItem.current').click(function(){
+		return false;
+	});
+	
+	$('#filterDomains').click(function(){
+		window.location.href = '?searchUsername='+ $('input[name=searchUsername]').val() +'&searchDomain='+ $('input[name=searchDomain]').val();
+		return false;
+	});
+	
+	// ajax
+	
+	$('.checkStatus').click(function(){
+		var domain = $(this).data('domain');
+		var $td = $(this).closest('td').html('<img src="<PLUGINNAME>/images/ajax-loader.gif" />');
+		$.get('<PLUGINNAME>/ajax.html', {'action': 'checkDomainStatus', 'domain':domain}, function(r){
+			var json = parseAjaxResponse(r);
+			addFlashMsg(json.domainstatus == 1 ? 'success' : 'danger', json.msg, true);
+			$td.html(json.domainstatus == 1 ? '<span class="simple-success">Yes</span>' : '<span class="simple-error">No</span>');
+		});
+		return false;
+	});
+	
+	$('.toggleProtection').click(function(){
+		var domain = $(this).data('domain');
+		var $td = $(this).closest('td').html('<img src="<PLUGINNAME>/images/ajax-loader.gif" />');
+		$.get('<PLUGINNAME>/ajax.html', {'action': 'toggleDomains', 'domains':[domain]}, function(r){
+			var json = parseAjaxResponse(r); // {"success":1,"msg":"OK","results":{"asdffsdffsd.pl":{"action":"protect","result":true}}}
+			if (json.results[domain].result == true){
+				var shortMsg  = json.results[domain].action == 'protect' ? '<span class="simple-success">Protected</span>' : '<span class="simple-success">Unprotected</span>';
+			} else {
+				var shortMsg  = json.results[domain].action == 'protect' ? '<span class="simple-error">Error while protecting</span>' : '<span class="simple-error">Error while unprotecting</span>';
+				if (typeof json.results[domain].msg != 'undefined')
+					addFlashMsg('danger', json.results[domain].msg, true);
+			}
+			$td.html( shortMsg );
+		});
+		return false;
+	});
+	
+	$('.loginSpamExperts').click(function(){
+		var domain = $(this).data('domain');
+		var $td = $(this).closest('td').html('<img src="<PLUGINNAME>/images/ajax-loader.gif" />');
+		
+		var opennewtab = false;
+		var json = null;
+		$.ajax({
+			url: '<PLUGINNAME>/ajax.html',
+			data: {'action': 'login', 'domain':domain},
+			context: document.body,
+			async:false,
+			success: function(res){
+				json = parseAjaxResponse(res);
+				if (typeof json.token != 'undefined' && json.token != null){
+					$td.html( '<span class="simple-success">Logged In</span>' );
+					opennewtab = true;
+				} else {
+					$td.html( '<span class="simple-error">Error while logging</span>' );
+				}
+			}
+		});
+		
+		if (opennewtab == true){
+			window.open(json.url,'_blank');
+		}
+		
+		return false;
+	});
+	$('#protectSelected, #unprotectSelected').click(function(){
+		$('#bulkActionResult').html('Action Log:<br/>');
+		var domains = [];
+		$('.bulkcheck:checked').each(function(){
+			domains.push( $(this).data('domain') );
+		});
+		
+		domainsParts = [];
+		domainsNumber = 0;
+		domainsDone = 0;
+		domainsAction = $(this).attr('id') == 'protectSelected' ? 'protectDomains' : 'unprotectDomains';
+		var $bar = $('.progressContainer');
+		updateProgressBar($bar, 0);
+		
+		
+		var numberOfDomainsAtOnce = 2;
+		var numberOfSecondsPerOne = 5;
+		var parts = Math.ceil( domains.length / numberOfDomainsAtOnce );
+		for (var p = 0; p < parts; p++){
+			var toSend = [];
+			for (var i = p * numberOfDomainsAtOnce; i < (p+1) * numberOfDomainsAtOnce; i++){
+				if (typeof domains[i] != 'undefined'){
+					toSend.push( domains[i] );
+					domainsNumber++;
+				}
+			}
+			domainsParts.push(toSend);
+			
+			setTimeout(function(){
+				$.each(domainsParts, function(i,v){
+					// send ajax with X domains
+					$.ajax({
+						url: '<PLUGINNAME>/ajax.html',
+						data: {'action': domainsAction, 'domains':v}
+					}).done(function(res){
+						var json = parseAjaxResponse(res);
+						if (typeof json.results != 'undefined'){
+							domainsDone += numberOfDomainsAtOnce;
+							percentDone = Math.round( domainsDone / domainsNumber * 100 );
+							updateProgressBar($bar, percentDone);
+							
+							$.each(json.results, function(domain,v){
+								var msg = typeof v.msg != 'undefined' ? ': ' + v.msg : '';
+								$('#bulkActionResult').append(ucfirst(v.action) + ' <strong>' + domain + '</strong>: ' + (v.result == true ? '<span class="simple-success">Success</span>' : '<span class="simple-error">Error'+msg+'</span>') + '<br/>');
+							});
+						} else {
+							alert('Wrong server response. Try again later.');
+						}
+					});
+					domainsParts.splice(0, 1);
+					return false;
+				});
+			}, p * numberOfDomainsAtOnce * numberOfSecondsPerOne * 1000);
+		}
+		
+		return false;
+	});
+	
+});
+</script>

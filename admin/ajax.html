@@ -1,0 +1,175 @@
+#!/usr/local/bin/php -d disable_functions=""
+<?php
+
+include_once dirname(__FILE__) . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . 'plugin.php';
+
+class Ajax_SpamExperts extends Ajax {
+	
+	public function call_checkDomainStatus(){
+		try {
+			$api = $this->_getSpamExpertsApi();
+			$res = $api->getDomainStatus( $this->_params['domain'] );
+			$msg = $res ? 'This domain is present in the filter.' : 'This domain is not present in the filter.';
+			$msgColor = $res ? 'green' : 'red';
+			$this->sendResponse(true, '<span style="color:'.$msgColor.'">'.$msg.'</span>', array(
+				'domainstatus' => $res ? 1 : 0
+			));
+			
+		} catch (Exception $e){
+			$this->sendResponse(false, $e->getMessage(), array(
+				'domainstatus' => 0
+			));
+			
+		}
+	}
+	
+	public function call_login(){
+		try {
+			$conf = new Configuration();
+			$api = $this->_getSpamExpertsApi();
+			
+			if ($conf->get('add_domain_during_login')){
+				$api->protectDomains( array($this->_params['domain']), $conf, new DirectAdmin_API() );
+			}
+			
+			$res = $api->login( $this->_params['domain'] );
+			$msg = $res ? 'Logging for '.$domain.' successful' : 'Unable to get login token for ' . $domain;
+			$this->sendResponse($res ? true : false, $msg, array(
+				'token' => $res,
+				'url' => $conf->get('spampanel_url') . '/?authticket=' . $res
+			));
+			
+		} catch (Exception $e){
+			$this->sendResponse(false, $e->getMessage());
+		}
+	}
+	
+	public function call_toggleDomains(){
+		try {
+			$api = $this->_getSpamExpertsApi();
+			$this->sendResponse(true, 'OK', array(
+				'results' => $api->toggleDomains( $this->_params['domains'] )
+			));
+			
+		} catch (Exception $e){
+			$this->sendResponse(false, $e->getMessage());
+			
+		}
+	}
+	
+	public function call_protectDomains(){
+		try {
+			$api = $this->_getSpamExpertsApi();
+			$this->sendResponse(true, 'OK', array(
+				'results' => $api->protectDomains( $this->_params['domains'], new Configuration(), new DirectAdmin_API() )
+			));
+			
+		} catch (Exception $e){
+			$this->sendResponse(false, $e->getMessage());
+		}
+	}
+	
+	public function call_unprotectDomains(){
+		try {
+			$api = $this->_getSpamExpertsApi();
+			$this->sendResponse(true, 'OK', array(
+				'results' => $api->unprotectDomains( $this->_params['domains'], new Configuration(), new DirectAdmin_API()  )
+			));
+			
+		} catch (Exception $e){
+			$this->sendResponse(false, $e->getMessage());
+		}
+	}
+	
+	public function call_listDaDomains(){
+        $conf = new Configuration();
+		
+		$processExtraDomains = $conf->get('process_addon_and_parked_domains');
+
+        try {
+			$api = new DirectAdmin_API();
+			$this->sendResponse(true, 'OK', array(
+				'domains' => $api->getAllDomains(array(
+					'page'	=> 1,
+					'limit'	=> 10000,
+                    'includePointers' => !empty($processExtraDomains),
+				))
+			));
+			
+		} catch (Exception $e){
+			$this->sendResponse(false, $e->getMessage());
+		}
+	}
+	
+	public function call_updateBulkprotectDate(){
+		try {
+			$conf = new Configuration();
+			$conf->set('bulkprotect_date', date("Y-m-d H:i:s"));
+			$res = $conf->save();
+			
+			$this->sendResponse($res, $res ? 'OK' : 'Error during saving');
+			
+		} catch (Exception $e){
+			$this->sendResponse(false, $e->getMessage());
+		}
+	}
+	
+	public function call_runDiagnostic(){
+		$pluginPath = dirname(__FILE__) . '/../';
+		try {
+			$conf	= new Configuration();
+			$DA		= new DirectAdmin_API();
+			
+			try {
+				$info	= $DA->getSystemInfo();
+				$daVersion = str_replace('|Running','',$info['directadmin']);
+				$daAPI = (bool)$info;
+			} catch (Exception $e){
+				$daAPI = false;
+				$daVersion = null;
+			}
+			try {
+				$spamExp = $this->_getSpamExpertsApi();
+				$spamAPI = is_bool($spamExp->getDomainStatus('testdomain.com'));
+			} catch (Exception $e){
+				$spamAPI = strpos($e->getMessage(), 'testdomain.com') ? true : false;
+			}
+			
+		} catch (Exception $e){
+			$this->sendResponse(false, $e->getMessage());
+		}
+		
+		$phpVersion		= phpversion();
+		$confPerm		= substr(sprintf('%o', fileperms($pluginPath . 'configuration.conf')), -4);
+		$diradminPerm	= substr(sprintf('%o', fileperms($pluginPath . 'directadminapi.conf')), -4);
+		$hookDomainCrea	= file_exists($pluginPath . '../../scripts/custom/domain_create_post.sh');
+		$hookDomainRemo	= file_exists($pluginPath . '../../scripts/custom/domain_destroy_post.sh');
+		
+		$this->sendResponse(true, 'OK', array(
+			'phpversion'	=> version_compare($phpVersion, "5.3") != -1 ? 1 : 0,
+			'phpexec'		=> function_exists("exec"),
+			'confPerm'		=> $confPerm == "0660" ? 1 : 0,
+			'diradminPerm'	=> $diradminPerm == "0660" ? 1 : 0,
+			'hookDomainCrea'=> $hookDomainCrea ? 1 : 0,
+			'hookDomainRemo'=> $hookDomainRemo ? 1 : 0,
+			'daVersion'		=> isset($daVersion) ? (version_compare($daVersion, "1.43.3") != -1 ? 1 : 0) : 1,
+			'daAPI'			=> $daAPI ? 1 : 0,
+			'spamAPI'		=> $spamAPI ? 1 : 0,
+		));
+	}
+	
+	
+	private function _getSpamExpertsApi(){
+		$conf = new Configuration();
+		
+		return new SpamExperts_API(
+			$conf->get('api_hostname'),
+			$conf->get('api_username'),
+			$conf->get('api_password')
+		);
+	}
+
+}
+
+$ajax = new Ajax_SpamExperts();
+$ajax->processRequest( getParams() );

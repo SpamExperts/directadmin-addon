@@ -1,0 +1,8 @@
+active=yes
+author=SpamExperts
+id=<PLUGINNAME>
+installed=yes
+name="Professional Spam Filter"
+update_url=http://download.seinternal.com/integration/files/directadmin/latest.tar.gz
+version=4.0.$Format:%at$
+version_url=http://download.seinternal.com/integration/files/directadmin/latest_version.html

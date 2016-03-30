@@ -1,0 +1,114 @@
+#!/usr/local/bin/php -d disable_functions=""
+<?php
+include_once dirname(__FILE__) . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . 'plugin.php';
+
+$menu = new Menu('admin');
+echo pasteAssets();
+echo $menu->render('support');
+
+try {
+	$mainconf = new Configuration('plugin.conf');
+	$pluginVersion = $mainconf->get("version");
+} catch (Exception $e){
+	$pluginVersion = $e->getMessage();
+}
+try {
+	$DA = new DirectAdmin_API();
+	$info = $DA->getSystemInfo();
+
+} catch (Exception $e){
+	$info['directadmin'] = '';
+}
+$logsPath = dirname(dirname(__FILE__)).'/<PLUGINNAME>.log';
+?>
+
+<div class="moduleContent">
+	<h4>Information</h4>
+
+	<table class="table">
+		<tr>
+			<td>Controlpanel</td>
+			<td>DirectAdmin <?php echo str_replace('|Running','',$info['directadmin']); ?></td>
+		</tr>
+		<tr>
+			<td>PHP version</td>
+			<td><?php echo phpversion(); ?></td>
+		</tr>
+		<tr>
+			<td>Addon version</td>
+			<td><?php echo $pluginVersion; ?></td>
+		</tr>
+		<tr>
+			<td>Logs (run by SSH as an admin or root)</td>
+			<td><i><?php echo 'less ' . $logsPath; ?></i></td>
+		</tr>
+	</table>
+
+	<h4>Diagnostics</h4>
+
+	In case you have issues with the addon, you can run a diagnostics on your installation prior to contacting support.
+
+	<div style="margin-top:30px;">
+		<a href="" class="btn btn-primary" id="run_diagnostic">Run diagnostics</a>
+	</div>
+	
+	<div id="diagnostic_response" style="display:none;margin-top:20px;">
+		<table class="table">
+			<tr>
+				<td>Configuration File Permissions</td>
+				<td id="diagnostic_confPerm">Configuration file "configuration.conf" has not 660 permissions</td>
+			</tr>
+			<tr>
+				<td>DirectAdmin Configuration File Permissions</td>
+				<td id="diagnostic_diradminPerm">Configuration file "directadminapi.conf" has not 660 permissions</td>
+			</tr>
+			<tr>
+				<td>DirectAdmin Version</td>
+				<td id="diagnostic_daVersion">DirectAdmin Version is not proper</td>
+			</tr>
+			<tr>
+				<td>PHP Version</td>
+				<td id="diagnostic_phpversion">PHP Version is not proper</td>
+			</tr>
+			<tr>
+				<td>PHP exec function</td>
+				<td id="diagnostic_phpexec">PHP exec function does not exists</td>
+			</tr>
+			<tr>
+				<td>Direct Admin API Connection</td>
+				<td id="diagnostic_daAPI">No Connection. Please, setup connection details in "directadminapi.conf"</td>
+			</tr>
+			<tr>
+				<td>SpamExperts API Connection</td>
+				<td id="diagnostic_spamAPI">No Connection. Please, setup connection details in Configuration tab</td>
+			</tr>
+		</table>
+	</div>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function(){
+	$("#run_diagnostic").click(function(){
+		
+		$(this).after('<img src="images/ajax-loader.gif" id="diagnostic_loading" />');
+		$(this).remove();
+		
+		$.get('ajax.html',{'action':'runDiagnostic'}, function(res){
+			$('#diagnostic_loading').remove();
+			$('#diagnostic_response').show();
+			
+			var json = parseAjaxResponse(res);
+			
+			$.each(json, function(index, value){
+				var id = '#diagnostic_' + index;
+				if (value == 1){
+					$(id).html('<strong class="simple-success">OK</strong>');
+				} else {
+					$(id).addClass('simple-error');
+				}
+			});
+		});
+		return false;
+	});
+});
+</script>
