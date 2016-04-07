@@ -300,9 +300,14 @@ class SpamExperts_API {
 		$sock = new DirectAdmin_HTTPSocket();
 		$sock->connect($this->_host, 80);
 		$sock->set_login($this->_login, $this->_pass);
-		
-		$sock->setDebugMode(true);
-		$sock->setLogPath(dirname(__FILE__) . '/../prospamfilter.log');
+
+        $pluginDir = dirname(dirname(__FILE__));
+        $enableDebugMode = file_exists($pluginDir . '/debug');
+        $sock->setDebugMode($enableDebugMode);
+
+        $processUser = trim(`whoami`);
+        $logPath = $pluginDir . "/logs/prospamfilter_{$processUser}.log";
+		$sock->setLogPath($logPath);
 
 		return $sock;
 	}

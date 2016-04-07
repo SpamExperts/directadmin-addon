@@ -19,7 +19,9 @@ try {
 } catch (Exception $e){
 	$info['directadmin'] = '';
 }
-$logsPath = dirname(dirname(__FILE__)).'/<PLUGINNAME>.log';
+$processUser = trim(`whoami`);
+$logsPath['user'] = dirname(dirname(__FILE__)) . "/logs/prospamfilter_{$processUser}.log";
+$logsPath['hooks'] = dirname(dirname(__FILE__)) . "/logs/prospamfilter_root.log";
 ?>
 
 <div class="moduleContent">
@@ -39,8 +41,11 @@ $logsPath = dirname(dirname(__FILE__)).'/<PLUGINNAME>.log';
 			<td><?php echo $pluginVersion; ?></td>
 		</tr>
 		<tr>
-			<td>Logs (run by SSH as an admin or root)</td>
-			<td><i><?php echo 'less ' . $logsPath; ?></i></td>
+			<td>Debug logs, if enabled<br>(run by SSH as root)</td>
+			<td>
+                <i><?php echo 'less ' . $logsPath['user']; ?></i><br>
+                <i><?php echo 'less ' . $logsPath['hooks']; ?></i>
+            </td>
 		</tr>
 	</table>
 

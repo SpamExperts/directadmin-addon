@@ -23,7 +23,7 @@ chmod -R 755 $pluginpath/*
 chown -R diradmin:diradmin $pluginpath/*
 
 # creating configuration files
-for conf in configuration.conf directadminapi.conf plugin.conf spamexperts.log; do
+for conf in configuration.conf directadminapi.conf plugin.conf; do
 	if [ ! -e "$pluginpath$conf" ] ; then
 		touch "$pluginpath$conf"
 	fi
@@ -33,6 +33,12 @@ done
 
 chown root:root "$pluginpath/scripts/getconfig" 2>&1
 chmod 4755 "$pluginpath/scripts/getconfig" 2>&1
+
+if [ ! -e "$pluginpath/logs" ]; then
+    mkdir "$pluginpath/logs"
+fi
+chmod 777 "$pluginpath/logs"
+chown diradmin:diradmin "$pluginpath/logs"
 
 rm "$pluginpath/configuration.conf.new";
 rm "$pluginpath/directadminapi.conf.new";

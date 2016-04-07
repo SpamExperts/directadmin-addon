@@ -469,6 +469,8 @@ class DirectAdmin_HTTPSocket {
 			return false;
 		
 		$h = fopen($this->_logPath, 'a');
+		// make sure the file permissions are ok
+		chmod($this->_logPath, 0600);
 		fwrite($h, date('Y-m-d H:i:s') . "\n");
 		fwrite($h, "Request ".$request."\n");
 		fwrite($h, $response."\n\n");
