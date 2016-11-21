@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 pluginpath=$DOCUMENT_ROOT../
 
