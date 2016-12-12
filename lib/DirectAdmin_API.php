@@ -47,13 +47,31 @@ class DirectAdmin_API {
 			$this->_setupLocalConnection();
 	}
 	
-	public function getDomainsMxRecords($domain){
+	public function getDomainsMxRecords($domain, $username){
 		$sock = $this->_getSocket();
 		$sock->query('/CMD_API_DNS_ADMIN?domain='.$domain.'&urlencoded=yes');
 		$result = $sock->fetch_body();
 		
 		if (!$result){
 			throw new Exception('Unable to get DNS zone of domain ' . $domain);
+		}
+
+		$isRemote = FALSE;
+		if (strlen($username) != 0) {
+			$sock->query('/CMD_API_DNS_MX?domain='.$domain.'&as_user='.$username.'&urlencoded=yes');
+			$mx = $sock->fetch_body();
+
+			$lines = explode("\n", $mx);
+			foreach ($lines as $line) {
+				$setting = strtok($line, '=');
+				if ($setting != 'internal')
+					continue;
+
+				$value = substr($line, strlen($setting)+1);
+				if ($value == 'no') {
+					$isRemote = TRUE;
+				}
+			}
 		}
 		
 		$records = array();
@@ -69,7 +87,7 @@ class DirectAdmin_API {
 				$records[] = array(
 					'original'	=> $fixedRecord,
 					'full'		=> substr($fixedRecord, -1) == '.' ? substr($fixedRecord, 0, -1) : $fixedRecord . '.' . $domain,
-					'isRemote'	=> substr($fixedRecord, -1) == '.' && strpos($fixedRecord, $domain) === false ? true : false
+					'isRemote'	=> $isRemote,
 				);
 			}
 		}

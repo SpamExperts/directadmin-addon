@@ -44,7 +44,7 @@ class DirectAdmin_Domain {
 	 */
 	public function isRemote(){
 		$api = new DirectAdmin_API();
-		$records = $api->getDomainsMxRecords($this->domain);
+		$records = $api->getDomainsMxRecords($this->domain, $this->username);
 		return isset($records[0]['isRemote']) && $records[0]['isRemote'];
 	}
 	
