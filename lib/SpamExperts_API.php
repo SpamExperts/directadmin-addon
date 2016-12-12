@@ -63,6 +63,12 @@ class SpamExperts_API {
 		if (isset($json['result']['present'])){
 			return (bool)$json['result']['present'];
 		}
+
+		// This is somewhat of an edge case apparently. If it happens the domain isn't there.
+		if (preg_match('/does not belong to the admin/i', implode('. ', $json['messages']['error']))) {
+			return FALSE;
+		}
+
 		throw new Exception( isset($json['messages']['error']) ? implode('. ', $json['messages']['error']) : 'Unknown error.' );
 	}
 	
