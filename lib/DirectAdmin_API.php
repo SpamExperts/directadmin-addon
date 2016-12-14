@@ -84,6 +84,14 @@ class DirectAdmin_API {
 			parse_str(substr($line, strlen($recordType)+1), $details);
 			foreach ($details as $record => $v){
 				$fixedRecord = str_replace('_', '.', $record);
+
+				// If the checkbox at CMD_API_DNS_MX isn't checked make sure we run an additional test
+				if ($isRemote == FALSE) {
+					if (substr($fixedRecord, -1) == '.' && strpos($fixedRecord, $domain) === false) {
+						$isRemote = TRUE;
+					}
+				}
+
 				$records[] = array(
 					'original'	=> $fixedRecord,
 					'full'		=> substr($fixedRecord, -1) == '.' ? substr($fixedRecord, 0, -1) : $fixedRecord . '.' . $domain,
