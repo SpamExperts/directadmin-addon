@@ -25,15 +25,15 @@ If you are making chnages to the configuration file(s) don't forget to reload th
 1. Log in as the user that you're going to use for the DirectAdmin API communication (it's `admin` in our case);
 1. Go to `http://your.directadmin.host:2222/CMD_LOGIN_KEYS`
 1. Create a new Login Key
-    1.1 Pick a meaning Key Name
-    1.1 Use hard-to-guess Key Value 
-    1.1 Allow the following commands:
-        1.1.1 `CMD_API_ALL_USER_USAGE`
-        1.1.1 `CMD_API_DNS_ADMIN`
-        1.1.1 `CMD_API_DNS_MX`
-        1.1.1 `CMD_API_SHOW_USER_USAGE`
-        1.1.1 `CMD_API_SYSTEM_INFO`
-    1.1 Allow your localhost IP address only
+    1. Pick a meaning Key Name
+    1. Use hard-to-guess Key Value 
+    1. Allow the following commands:
+        1. `CMD_API_ALL_USER_USAGE`
+        1. `CMD_API_DNS_ADMIN`
+        1. `CMD_API_DNS_MX`
+        1. `CMD_API_SHOW_USER_USAGE`
+        1. `CMD_API_SYSTEM_INFO`
+    1. Allow your localhost IP address only
     
 #### Login Key utilization
     
