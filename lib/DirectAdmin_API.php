@@ -47,7 +47,7 @@ class DirectAdmin_API {
 			$this->_setupLocalConnection();
 	}
 	
-	public function getDomainsMxRecords($domain, $username){
+	public function getDomainsMxRecords($domain, $username = null){
 		$sock = $this->_getSocket();
 		$sock->query('/CMD_API_DNS_ADMIN?domain='.$domain.'&urlencoded=yes');
 		$result = $sock->fetch_body();
