@@ -144,12 +144,13 @@ class DirectAdmin_API {
 						continue;
 					if ($searchDomain && strpos($dom, $searchDomain) === false)
 						continue;
-					if ($searchUsername && strpos($username, $searchUsername) === false)
+					if ($searchUsername && $username != $searchUsername)
 						continue;
-					if ($searchReseller && strpos($details['creator'], $searchReseller) === false)
+					if ($searchReseller && $details['creator'] != $searchReseller)
 						continue;
 					
 					self::$total++;
+
 					$domains[$dom] = array(
 						'username' => $username,
 					);
