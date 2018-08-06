@@ -123,7 +123,7 @@ $(document).ready(function(){
 		var $domainslist = $('#domainslist');
 		
 		// get all of domains
-		$.get('ajax.html', {'action':'listDaDomains'}, function(res){
+		$.get('ajax.html', {'action':'listDaDomains', 'iframe': 'yes'}, function(res){
 			var json = parseAjaxResponse(res);
 			if (typeof json.success != 'undefined'){
 				var domains = [];
@@ -156,7 +156,7 @@ $(document).ready(function(){
 						// send ajax with X domains
 						$.ajax({
 							url: 'ajax.html',
-							data: {'action': 'protectDomains', 'domains':v}
+							data: {'action': 'protectDomains', 'domains': v, 'iframe': 'yes'}
 						}).done(function(res){
 							var json = parseAjaxResponse(res);
 							if (typeof json.results != 'undefined'){
@@ -181,7 +181,7 @@ $(document).ready(function(){
 			}
 			
 			setTimeout(function(){
-				$.get('ajax.html', {'action':'updateBulkprotectDate'});
+				$.get('ajax.html', {'action':'updateBulkprotectDate', 'iframe': 'yes'});
 			}, p * numberOfDomainsAtOnce * numberOfSecondsPerOne * 1000);
 		});
 		

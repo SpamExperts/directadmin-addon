@@ -112,7 +112,7 @@ $(document).ready(function(){
 	$('.checkStatus').click(function(){
 		var domain = $(this).data('domain');
 		var $td = $(this).closest('td').html('<img src="<PLUGINNAME>/images/ajax-loader.gif" />');
-		$.get('<PLUGINNAME>/ajax.html', {'action': 'checkDomainStatus', 'domain':domain}, function(r){
+		$.get('<PLUGINNAME>/ajax.html', {'action': 'checkDomainStatus', 'domain': domain, 'iframe': 'yes'}, function(r){
 			var json = parseAjaxResponse(r);
 			addFlashMsg(json.domainstatus == 1 ? 'success' : 'danger', json.msg, true);
 			$td.html(json.domainstatus == 1 ? '<span class="simple-success">Yes</span>' : '<span class="simple-error">No</span>');
@@ -123,7 +123,7 @@ $(document).ready(function(){
 	$('.toggleProtection').click(function(){
 		var domain = $(this).data('domain');
 		var $td = $(this).closest('td').html('<img src="<PLUGINNAME>/images/ajax-loader.gif" />');
-		$.get('<PLUGINNAME>/ajax.html', {'action': 'toggleDomains', 'domains':[domain]}, function(r){
+		$.get('<PLUGINNAME>/ajax.html', {'action': 'toggleDomains', 'domains': [domain], 'iframe': 'yes'}, function(r){
 			var json = parseAjaxResponse(r); // {"success":1,"msg":"OK","results":{"asdffsdffsd.pl":{"action":"protect","result":true}}}
 			if (json.results[domain].result == true){
 				var shortMsg  = json.results[domain].action == 'protect' ? '<span class="simple-success">Protected</span>' : '<span class="simple-success">Unprotected</span>';
@@ -145,7 +145,7 @@ $(document).ready(function(){
 		var json = null;
 		$.ajax({
 			url: '<PLUGINNAME>/ajax.html',
-			data: {'action': 'login', 'domain':domain},
+			data: {'action': 'login', 'domain': domain, 'iframe': 'yes'},
 			context: document.body,
 			async:false,
 			success: function(res){
@@ -198,7 +198,7 @@ $(document).ready(function(){
 					// send ajax with X domains
 					$.ajax({
 						url: '<PLUGINNAME>/ajax.html',
-						data: {'action': domainsAction, 'domains':v}
+						data: {'action': domainsAction, 'domains': v, 'iframe': 'yes'}
 					}).done(function(res){
 						var json = parseAjaxResponse(res);
 						if (typeof json.results != 'undefined'){

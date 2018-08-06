@@ -82,7 +82,7 @@ $(document).ready(function(){
 	$('.checkStatus').click(function(){
 		var domain = $(this).data('domain');
 		var $td = $(this).closest('td').html('<img src="<PLUGINNAME>/images/ajax-loader.gif" />');
-		$.get('<PLUGINNAME>/ajax.html', {'action': 'checkDomainStatus', 'domain':domain}, function(r){
+		$.get('<PLUGINNAME>/ajax.html', {'action': 'checkDomainStatus', 'domain': domain, 'iframe': 'yes'}, function(r){
 			var json = parseAjaxResponse(r);
 			addFlashMsg(json.domainstatus == 1 ? 'success' : 'danger', json.msg, true);
 			$td.html(json.domainstatus == 1 ? '<span class="simple-success">Yes</span>' : '<span class="simple-error">No</span>');
@@ -98,7 +98,7 @@ $(document).ready(function(){
 		var json = null;
 		$.ajax({
 			url: '<PLUGINNAME>/ajax.html',
-			data: {'action': 'login', 'domain':domain},
+			data: {'action': 'login', 'domain': domain, 'iframe': 'yes'},
 			context: document.body,
 			async:false,
 			success: function(res){

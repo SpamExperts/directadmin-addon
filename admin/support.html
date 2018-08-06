@@ -98,7 +98,7 @@ $(document).ready(function(){
 		$(this).after('<img src="images/ajax-loader.gif" id="diagnostic_loading" />');
 		$(this).remove();
 		
-		$.get('ajax.html',{'action':'runDiagnostic'}, function(res){
+		$.get('ajax.html',{'action': 'runDiagnostic', 'iframe': 'yes'}, function(res){
 			$('#diagnostic_loading').remove();
 			$('#diagnostic_response').show();
 			
