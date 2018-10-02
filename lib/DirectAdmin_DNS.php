@@ -44,13 +44,14 @@ class DirectAdmin_DNS
     public $results = array();
     private $oconfig = array
     (
-        'username' => '',
-        'password' => '',
-        'hostname' => '',
-        'ssl' => '',
+        'username'  => '',
+        'password'  => '',
+        'hostname'  => '',
+        'port'      => '',
+        'ssl'       => '',
         'defaultIP' => '',
-        'ns1'       =>  '',
-        'ns2'       =>  ''
+        'ns1'       => '',
+        'ns2'       => ''
     );
         
     public $config = array
@@ -110,9 +111,10 @@ class DirectAdmin_DNS
     {
         $username = urlencode($this->oconfig['username']);
         $password = urlencode($this->oconfig['password']);
+        $port = $this->oconfig['port'];
         $url = ($this->oconfig['ssl'] == '1' ? 
-        'https://'.$username.':'.$password.'@'.$this->oconfig['hostname'].':2222' : 
-        'http://'.$username.':'.$password.'@'.$this->oconfig['hostname'].':2222').'/'.$function;
+        'https://'.$username.':'.$password.'@'.$this->oconfig['hostname'].':'.$port :
+        'http://'.$username.':'.$password.'@'.$this->oconfig['hostname'].':'.$port).'/'.$function;
 
 
         if(is_array($params)) 
@@ -215,6 +217,7 @@ class DirectAdmin_DNS
         if(isset($config['username'])) $this->oconfig['username'] = $config['username'];
         if(isset($config['password'])) $this->oconfig['password'] = $config['password'];
         if(isset($config['hostname'])) $this->oconfig['hostname'] = $config['hostname'];
+        if(isset($config['port'])) $this->oconfig['port'] = $config['port'];
         if(isset($config['ssl'])) $this->oconfig['ssl'] = $config['ssl'];
         if(isset($config['defaultIP'])) $this->oconfig['defaultIP'] = $config['defaultIP'];
         if(isset($config['end_dot'])) $this->oconfig['end_dot'] = $config['end_dot'];

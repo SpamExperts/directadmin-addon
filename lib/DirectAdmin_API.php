@@ -221,6 +221,7 @@ class DirectAdmin_API {
 			'username'	=> $this->_login,
 			'password'	=> $this->_pass,
 			'hostname'	=> $this->_host,
+			'port'	    => $this->_port,
 			'ssl'		=> $this->_secure ? '1' : '0',
 			'end_dot'	=> 1,
 		));
