@@ -46,7 +46,7 @@ function pasteAssets(){
 		<script type="text/javascript">'. file_get_contents(dirname(__FILE__).DS.'..'.DS.'assets'.DS.'module.js') . '</script>
 		<style type="text/css">'		. file_get_contents(dirname(__FILE__).DS.'..'.DS.'assets'.DS.'style.css') . '</style>
 		<style type="text/css">'		. file_get_contents(dirname(__FILE__).DS.'..'.DS.'assets'.DS.'bootstrap.min.css') . '</style>
-                <link href="http://fonts.googleapis.com/css?family=Oswald:700,400&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+                <link href="//fonts.googleapis.com/css?family=Oswald:700,400&subset=latin,latin-ext" rel="stylesheet" type="text/css">
 	';
 }
 
