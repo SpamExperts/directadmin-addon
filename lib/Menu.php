@@ -30,8 +30,8 @@ class Menu {
 
 	protected $_scope;
 	protected $_logo = array(
-		'url' => '/CMD_PLUGINS_ADMIN/<PLUGINNAME>',
-		'img' => '/CMD_PLUGINS_ADMIN/<PLUGINNAME>/images/logo.jpg'
+		'url' => '/CMD_PLUGINS/<PLUGINNAME>',
+		'img' => '/CMD_PLUGINS/<PLUGINNAME>/images/logo.jpg'
 	);
 	protected $_admin = array(
 		'configuration'	=> array('title' => 'Configuration','url' => '/CMD_PLUGINS_ADMIN/<PLUGINNAME>/configuration.html'),
