@@ -58,7 +58,7 @@ echo $menu->addLogo();
 					<td class=""><?php echo $domain->username; ?></td>
 					<td class=""><a href="" class="checkStatus" data-domain="<?php echo $domain->domain; ?>">Check status</a></td>
 					<td class=""><a href="" class="toggleProtection" data-domain="<?php echo $domain->domain; ?>">Toggle Protection</a></td>
-					<td class=""><a href="<PLUGINNAME>/login.html?domain=<?php echo $domain->domain; ?>" target="_blank" class="_loginSpamExperts" data-domain="<?php echo $domain->domain; ?>">Login</a></td>
+					<td class=""><a href="<PLUGINNAME>/login.html?iframe=yes&domain=<?php echo $domain->domain; ?>" target="_blank" class="_loginSpamExperts" data-domain="<?php echo $domain->domain; ?>">Login</a></td>
 				</tr>
 			<?php } ?>
 			<?php if (empty($domains)){ ?>
