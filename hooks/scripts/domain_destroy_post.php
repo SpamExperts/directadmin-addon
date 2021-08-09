@@ -28,33 +28,35 @@
 
 $domain = $argv[1];
 if (!$domain)
-	die('Error: empty domain');
+    die('Error: empty domain');
 
+// phpcs:ignore PHPCS_SecurityAudit.BadFunctions
 include_once dirname(__FILE__) . '/../../lib/plugin.php';
 
 $conf = new Configuration();
 if ($conf->get('automatically_delete_domains')){
-	
-	// auto-adding to spamexperts
-	echo 'Deleting domain '.$domain.' from the SpamExperts<br/>';
-	
-	$hostname = $conf->get('api_hostname');
-	$username = $conf->get('api_username');
-	$password = $conf->get('api_password');
-	
-	// no credentials in configuration
-	if (!$hostname || !$username || !$password)
-		die('Unable to delete domain from the SpamExperts - check credentials on plugin\'s configuration');
-	
-	$api = new SpamExperts_API($hostname, $username, $password);
 
-	// we should remove domain pointers when a domain is removed from DA
-	$daApi = new DirectAdmin_API;
+    // auto-adding to spamexperts
+    // phpcs:ignore PHPCS_SecurityAudit.BadFunctions.EasyXSS.EasyXSSwarn
+    echo 'Deleting domain '.$domain.' from the SpamExperts<br/>';
 
-	$allDomains = $daApi->getAllDomains(array(
-			'searchDomain' => $domain,
-			'includePointers' => true,
-	));
+    $hostname = $conf->get('api_hostname');
+    $username = $conf->get('api_username');
+    $password = $conf->get('api_password');
+
+    // no credentials in configuration
+    if (!$hostname || !$username || !$password)
+        die('Unable to delete domain from the SpamExperts - check credentials on plugin\'s configuration');
+
+    $api = new SpamExperts_API($hostname, $username, $password);
+
+    // we should remove domain pointers when a domain is removed from DA
+    $daApi = new DirectAdmin_API;
+
+    $allDomains = $daApi->getAllDomains(array(
+            'searchDomain' => $domain,
+            'includePointers' => true,
+    ));
 
     $domains = array();
     foreach ($allDomains as $addon => $props) {
@@ -65,16 +67,16 @@ if ($conf->get('automatically_delete_domains')){
 
     $domains[] = $domain;
 
-	$res = $api->unprotectDomains($domains, $conf, $daApi);
-	
-	if (isset($res[$domain]['result'])){
-		
-		die( $res[$domain]['result'] ? 'Domain has been deleted from the SpamExperts' : 'Error during deleting domain from the SpamExperts' );
-		
-	} else {
-		die('Error during adding domain to the SpamExperts');
-	}
-	
+    $res = $api->unprotectDomains($domains, $conf, $daApi);
+
+    if (isset($res[$domain]['result'])){
+        // phpcs:ignore PHPCS_SecurityAudit.BadFunctions.EasyXSS.EasyXSSwarn
+        die( $res[$domain]['result'] ? 'Domain has been deleted from the SpamExperts' : 'Error during deleting domain from the SpamExperts' );
+
+    } else {
+        die('Error during adding domain to the SpamExperts');
+    }
+
 } else {
-	// auto-adding to spamexperts disabled -> no action
+    // auto-adding to spamexperts disabled -> no action
 }

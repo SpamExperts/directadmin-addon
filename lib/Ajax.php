@@ -28,27 +28,29 @@
 
 class Ajax {
 
-	protected $_params;
-	
-	public function processRequest($params){
-		$this->_params = $params;
-		$method = 'call_' . $params['action'];
-		call_user_func_array(array($this, $method), array());
-		$this->sendResponse(false, 'Action does not respond the standard way.');
-	}
-	
-	public function __call($name, $arguments) {
-		$this->sendResponse(false, 'Action "'.$name.'" is not supported');
-	}
-	
-	protected function sendResponse($success, $msg, array $params = array()) {
-		$res = array(
-			'success'	=> $success ? 1 : 0,
-			'msg'		=> $msg
-		);
-		$json = json_encode(array_merge($res, $params));
-		echo '[AJAX_RESPONSE]' . $json . '[/AJAX_RESPONSE]';
-		die();
-	}
-	
+    protected $_params;
+
+    public function processRequest($params){
+        $this->_params = $params;
+        $method = 'call_' . $params['action'];
+        // phpcs:ignore PHPCS_SecurityAudit.BadFunctions
+        call_user_func_array(array($this, $method), array());
+        $this->sendResponse(false, 'Action does not respond the standard way.');
+    }
+
+    public function __call($name, $arguments) {
+        $this->sendResponse(false, 'Action "'.$name.'" is not supported');
+    }
+
+    protected function sendResponse($success, $msg, array $params = array()) {
+        $res = array(
+            'success'	=> $success ? 1 : 0,
+            'msg'		=> $msg
+        );
+        $json = json_encode(array_merge($res, $params));
+        // phpcs:ignore PHPCS_SecurityAudit.BadFunctions.EasyXSS.EasyXSSwarn
+        echo '[AJAX_RESPONSE]' . $json . '[/AJAX_RESPONSE]';
+        die();
+    }
+
 }

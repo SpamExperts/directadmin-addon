@@ -137,6 +137,7 @@ class DirectAdmin_DNS
             CURLOPT_TIMEOUT => 30
         );
         curl_setopt_array($ch, $chOptions);
+        // phpcs:ignore PHPCS_SecurityAudit.BadFunctions.FilesystemFunctions.WarnFilesystem
         $out = curl_exec($ch); 
        
         if($out === false) 
@@ -447,11 +448,13 @@ class DirectAdmin_DNS
                 $add[] = $record;
             }
            
-        }      
+        }
+        // phpcs:ignore PHPCS_SecurityAudit.BadFunctions.FilesystemFunctions.WarnFilesystem
         $this->delete($delete);
         $this->add($add);
     }
 
+    // phpcs:ignore PHPCS_SecurityAudit.BadFunctions.FilesystemFunctions.WarnFilesystem
     public function delete($data)
     { 
         if(empty($data))

@@ -21,461 +21,468 @@
 
 class DirectAdmin_HTTPSocket {
 
-	var $version = '2.7.1';
-	
-	/* all vars are private except $error, $query_cache, and $doFollowLocationHeader */
+    var $version = '2.7.1';
 
-	var $method = 'GET';
+    /* all vars are private except $error, $query_cache, and $doFollowLocationHeader */
 
-	var $remote_host;
-	var $remote_port;
-	var $remote_uname;
-	var $remote_passwd;
+    var $method = 'GET';
 
-	var $result;
-	var $result_header;
-	var $result_body;
-	var $result_status_code;
+    var $remote_host;
+    var $remote_port;
+    var $remote_uname;
+    var $remote_passwd;
 
-	var $lastTransferSpeed;
+    var $result;
+    var $result_header;
+    var $result_body;
+    var $result_status_code;
 
-	var $bind_host;
+    var $lastTransferSpeed;
 
-	var $error = array();
-	var $warn = array();
-	var $query_cache = array();
+    var $bind_host;
 
-	var $doFollowLocationHeader = TRUE;
-	var $redirectURL;
+    var $error = array();
+    var $warn = array();
+    var $query_cache = array();
 
-	var $extra_headers = array();
+    var $doFollowLocationHeader = TRUE;
+    var $redirectURL;
 
-	/**
-	 * Create server "connection".
-	 *
-	 */
-	function connect($host, $port = '' )
-	{
-		if (!is_numeric($port))
-		{
-			$port = 80;
-		}
+    var $extra_headers = array();
 
-		$this->remote_host = $host;
-		$this->remote_port = $port;
-	}
+    /**
+     * Create server "connection".
+     *
+     */
+    function connect($host, $port = '' )
+    {
+        if (!is_numeric($port))
+        {
+            $port = 80;
+        }
 
-	function bind( $ip = '' )
-	{
-		if ( $ip == '' )
-		{
-			$ip = $_SERVER['SERVER_ADDR'];
-		}
+        $this->remote_host = $host;
+        $this->remote_port = $port;
+    }
 
-		$this->bind_host = $ip;
-	}
+    function bind( $ip = '' )
+    {
+        if ( $ip == '' )
+        {
+            $ip = $_SERVER['SERVER_ADDR'];
+        }
 
-	/**
-	 * Change the method being used to communicate.
-	 *
-	 * @param string|null request method. supports GET, POST, and HEAD. default is GET
-	 */
-	function set_method( $method = 'GET' )
-	{
-		$this->method = strtoupper($method);
-	}
+        $this->bind_host = $ip;
+    }
 
-	/**
-	 * Specify a username and password.
-	 *
-	 * @param string|null username. defualt is null
-	 * @param string|null password. defualt is null
-	 */
-	function set_login( $uname = '', $passwd = '' )
-	{
-		if ( strlen($uname) > 0 )
-		{
-			$this->remote_uname = $uname;
-		}
+    /**
+     * Change the method being used to communicate.
+     *
+     * @param string|null request method. supports GET, POST, and HEAD. default is GET
+     */
+    function set_method( $method = 'GET' )
+    {
+        $this->method = strtoupper($method);
+    }
 
-		if ( strlen($passwd) > 0 )
-		{
-			$this->remote_passwd = $passwd;
-		}
+    /**
+     * Specify a username and password.
+     *
+     * @param string|null username. defualt is null
+     * @param string|null password. defualt is null
+     */
+    function set_login( $uname = '', $passwd = '' )
+    {
+        if ( strlen($uname) > 0 )
+        {
+            $this->remote_uname = $uname;
+        }
 
-	}
+        if ( strlen($passwd) > 0 )
+        {
+            $this->remote_passwd = $passwd;
+        }
 
-	/**
-	 * Query the server
-	 *
-	 * @param string containing properly formatted server API. See DA API docs and examples. Http:// URLs O.K. too.
-	 * @param string|array query to pass to url
-	 * @param int if connection KB/s drops below value here, will drop connection
-	 */
-	function query( $request, $content = '', $doSpeedCheck = 0 )
-	{
-		$this->error = $this->warn = array();
-		$this->result_status_code = NULL;
+    }
 
-		// is our request a http:// ... ?
-		if (preg_match('!^http://!i',$request))
-		{
-			$location = parse_url($request);
-			$this->connect($location['host'],$location['port']);
-			$this->set_login($location['user'],$location['pass']);
-			
-			$request = $location['path'];
-			$content = $location['query'];
+    /**
+     * Query the server
+     *
+     * @param string containing properly formatted server API. See DA API docs and examples. Http:// URLs O.K. too.
+     * @param string|array query to pass to url
+     * @param int if connection KB/s drops below value here, will drop connection
+     */
+    function query( $request, $content = '', $doSpeedCheck = 0 )
+    {
+        $this->error = $this->warn = array();
+        $this->result_status_code = NULL;
 
-			if ( strlen($request) < 1 )
-			{
-				$request = '/';
-			}
+        // is our request a http:// ... ?
+        if (preg_match('!^http://!i',$request))
+        {
+            $location = parse_url($request);
+            $this->connect($location['host'],$location['port']);
+            $this->set_login($location['user'],$location['pass']);
 
-		}
+            $request = $location['path'];
+            $content = $location['query'];
 
-		$array_headers = array(
-			'User-Agent' => "HTTPSocket/$this->version",
-			'Host' => ( $this->remote_port == 80 ? $this->remote_host : "$this->remote_host:$this->remote_port" ),
-			'Accept' => '*/*',
-			'Connection' => 'Close' );
+            if ( strlen($request) < 1 )
+            {
+                $request = '/';
+            }
 
-		foreach ( $this->extra_headers as $key => $value )
-		{
-			$array_headers[$key] = $value;
-		}
+        }
 
-		$this->result = $this->result_header = $this->result_body = '';
+        $array_headers = array(
+            'User-Agent' => "HTTPSocket/$this->version",
+            'Host' => ( $this->remote_port == 80 ? $this->remote_host : "$this->remote_host:$this->remote_port" ),
+            'Accept' => '*/*',
+            'Connection' => 'Close' );
 
-		// was content sent as an array? if so, turn it into a string
-		if (is_array($content))
-		{
-			$pairs = array();
+        foreach ( $this->extra_headers as $key => $value )
+        {
+            $array_headers[$key] = $value;
+        }
 
-			foreach ( $content as $key => $value )
-			{
-				$pairs[] = "$key=".urlencode($value);
-			}
+        $this->result = $this->result_header = $this->result_body = '';
 
-			$content = join('&',$pairs);
-			unset($pairs);
-		}
+        // was content sent as an array? if so, turn it into a string
+        if (is_array($content))
+        {
+            $pairs = array();
 
-		$OK = TRUE;
+            foreach ( $content as $key => $value )
+            {
+                $pairs[] = "$key=".urlencode($value);
+            }
 
-		// instance connection
-		if ($this->bind_host)
-		{
-			$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-			socket_bind($socket,$this->bind_host);
+            $content = join('&',$pairs);
+            unset($pairs);
+        }
 
-			if (!@socket_connect($socket,$this->remote_host,$this->remote_port))
-			{
-				$OK = FALSE;
-			}
+        $OK = TRUE;
 
-		}
-		else
-		{
+        // instance connection
+        if ($this->bind_host)
+        {
+            $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+            socket_bind($socket,$this->bind_host);
+
+            if (!@socket_connect($socket,$this->remote_host,$this->remote_port))
+            {
+                $OK = FALSE;
+            }
+
+        }
+        else
+        {
             $context = stream_context_create();
             stream_context_set_option($context, 'ssl', 'verify_peer', false);
             stream_context_set_option($context, 'ssl', 'verify_peer_name', false);
 
             $socket = @stream_socket_client( $this->remote_host.":".$this->remote_port, $sock_errno, $sock_errstr, 10,
                 STREAM_CLIENT_CONNECT, $context);
-		}
+        }
 
-		if ( !$socket || !$OK )
-		{
-			$this->error[] = "Can't create socket connection to $this->remote_host:$this->remote_port.";
-			return 0;
-		}
+        if ( !$socket || !$OK )
+        {
+            $this->error[] = "Can't create socket connection to $this->remote_host:$this->remote_port.";
+            return 0;
+        }
 
-		// if we have a username and password, add the header
-		if ( isset($this->remote_uname) && isset($this->remote_passwd) )
-		{
-			$array_headers['Authorization'] = 'Basic '.base64_encode("$this->remote_uname:$this->remote_passwd");
-		}
+        // if we have a username and password, add the header
+        if ( isset($this->remote_uname) && isset($this->remote_passwd) )
+        {
+            // phpcs:ignore PHPCS_SecurityAudit.BadFunctions.CryptoFunctions.WarnCryptoFunc
+            $array_headers['Authorization'] = 'Basic '.base64_encode("$this->remote_uname:$this->remote_passwd");
+        }
 
-		// for DA skins: if $this->remote_passwd is NULL, try to use the login key system
-		if ( isset($this->remote_uname) && $this->remote_passwd == NULL )
-		{
-			$array_headers['Cookie'] = "session={$_SERVER['SESSION_ID']}; key={$_SERVER['SESSION_KEY']}";
-		}
+        // for DA skins: if $this->remote_passwd is NULL, try to use the login key system
+        if ( isset($this->remote_uname) && $this->remote_passwd == NULL )
+        {
+            $array_headers['Cookie'] = "session={$_SERVER['SESSION_ID']}; key={$_SERVER['SESSION_KEY']}";
+        }
 
-		// if method is POST, add content length & type headers
-		if ( $this->method == 'POST' )
-		{
-			$array_headers['Content-type'] = 'application/x-www-form-urlencoded';
-			$array_headers['Content-length'] = strlen($content);
-		}
-		// else method is GET or HEAD. we don't support anything else right now.
-		else
-		{
-			if ($content)
-			{
-				$request .= "?$content";
-			}
-		}
+        // if method is POST, add content length & type headers
+        if ( $this->method == 'POST' )
+        {
+            $array_headers['Content-type'] = 'application/x-www-form-urlencoded';
+            $array_headers['Content-length'] = strlen($content);
+        }
+        // else method is GET or HEAD. we don't support anything else right now.
+        else
+        {
+            if ($content)
+            {
+                $request .= "?$content";
+            }
+        }
 
-		// prepare query
-		$query = "$this->method $request HTTP/1.0\r\n";
-		foreach ( $array_headers as $key => $value )
-		{
-			$query .= "$key: $value\r\n";
-		}
-		$query .= "\r\n";
+        // prepare query
+        $query = "$this->method $request HTTP/1.0\r\n";
+        foreach ( $array_headers as $key => $value )
+        {
+            $query .= "$key: $value\r\n";
+        }
+        $query .= "\r\n";
 
-		// if POST we need to append our content
-		if ( $this->method == 'POST' && $content )
-		{
-			$query .= "$content\r\n\r\n";
-		}
+        // if POST we need to append our content
+        if ( $this->method == 'POST' && $content )
+        {
+            $query .= "$content\r\n\r\n";
+        }
 
-		// query connection
-		if ($this->bind_host)
-		{
-			socket_write($socket,$query);
+        // query connection
+        if ($this->bind_host)
+        {
+            socket_write($socket,$query);
 
-			// now load results
-			while ( $out = socket_read($socket,2048) )
-			{
-				$this->result .= $out;
-			}
-		}
-		else
-		{
-			fwrite( $socket, $query, strlen($query) );
+            // now load results
+            while ( $out = socket_read($socket,2048) )
+            {
+                $this->result .= $out;
+            }
+        }
+        else
+        {
+            // phpcs:ignore PHPCS_SecurityAudit.BadFunctions.FilesystemFunctions.WarnFilesystem
+            fwrite( $socket, $query, strlen($query) );
 
-			// now load results
-			$this->lastTransferSpeed = 0;
-			$status = socket_get_status($socket);
-			$startTime = time();
-			$length = 0;
-			$prevSecond = 0;
-			while ( !feof($socket) && !$status['timed_out'] )
-			{
-				$chunk = fgets($socket,1024);
-				$length += strlen($chunk);
-				$this->result .= $chunk;
+            // now load results
+            $this->lastTransferSpeed = 0;
+            $status = socket_get_status($socket);
+            $startTime = time();
+            $length = 0;
+            $prevSecond = 0;
+            // phpcs:ignore PHPCS_SecurityAudit.BadFunctions.FilesystemFunctions.WarnFilesystem
+            while ( !feof($socket) && !$status['timed_out'] )
+            {
+                // phpcs:ignore PHPCS_SecurityAudit.BadFunctions.FilesystemFunctions.WarnFilesystem
+                $chunk = fgets($socket,1024);
+                $length += strlen($chunk);
+                $this->result .= $chunk;
 
-				$elapsedTime = time() - $startTime;
+                $elapsedTime = time() - $startTime;
 
-				if ( $elapsedTime > 0 )
-				{
-					$this->lastTransferSpeed = ($length/1024)/$elapsedTime;
-				}
+                if ( $elapsedTime > 0 )
+                {
+                    $this->lastTransferSpeed = ($length/1024)/$elapsedTime;
+                }
 
-				if ( $doSpeedCheck > 0 && $elapsedTime > 5 && $this->lastTransferSpeed < $doSpeedCheck )
-				{
-					$this->warn[] = "kB/s for last 5 seconds is below 50 kB/s (~".( ($length/1024)/$elapsedTime )."), dropping connection...";
-					$this->result_status_code = 503;
-					break;
-				}
+                if ( $doSpeedCheck > 0 && $elapsedTime > 5 && $this->lastTransferSpeed < $doSpeedCheck )
+                {
+                    $this->warn[] = "kB/s for last 5 seconds is below 50 kB/s (~".( ($length/1024)/$elapsedTime )."), dropping connection...";
+                    $this->result_status_code = 503;
+                    break;
+                }
 
-			}
+            }
 
-			if ( $this->lastTransferSpeed == 0 )
-			{
-				$this->lastTransferSpeed = $length/1024;
-			}
+            if ( $this->lastTransferSpeed == 0 )
+            {
+                $this->lastTransferSpeed = $length/1024;
+            }
 
-		}
-		
-		list($this->result_header,$this->result_body) = preg_split("/\r\n\r\n/",$this->result,2);
-		
-		if ($this->bind_host)
-		{
-			socket_close($socket);
-		}
-		else
-		{
-			fclose($socket);
-		}
+        }
 
-		$this->query_cache[] = $query;
+        list($this->result_header,$this->result_body) = preg_split("/\r\n\r\n/",$this->result,2);
+
+        if ($this->bind_host)
+        {
+            socket_close($socket);
+        }
+        else
+        {
+            // phpcs:ignore PHPCS_SecurityAudit.BadFunctions.FilesystemFunctions.WarnFilesystem
+            fclose($socket);
+        }
+
+        $this->query_cache[] = $query;
 
 
-		$headers = $this->fetch_header();
+        $headers = $this->fetch_header();
 
-		// what return status did we get?
-		if (!$this->result_status_code)
-		{
-			preg_match("#HTTP/1\.. (\d+)#",$headers[0],$matches);
-			$this->result_status_code = $matches[1];
-		}
+        // what return status did we get?
+        if (!$this->result_status_code)
+        {
+            preg_match("#HTTP/1\.. (\d+)#",$headers[0],$matches);
+            $this->result_status_code = $matches[1];
+        }
 
-		// did we get the full file?
-		if ( !empty($headers['content-length']) && $headers['content-length'] != strlen($this->result_body) )
-		{
-			$this->result_status_code = 206;
-		}
-		
-		if ($this->_debugMode){
-			$this->logResponse($this->remote_host.$request, 'HTTP '.$this->result_status_code."\n".$this->result_body);
-		}
+        // did we get the full file?
+        if ( !empty($headers['content-length']) && $headers['content-length'] != strlen($this->result_body) )
+        {
+            $this->result_status_code = 206;
+        }
 
-		// now, if we're being passed a location header, should we follow it?
-		if ($this->doFollowLocationHeader)
-		{
-			if (isset($headers['location']))
-			{
-				$this->redirectURL = $headers['location'];
-				$this->query($headers['location']);
-			}
-		}
-		
-	}
+        if ($this->_debugMode){
+            $this->logResponse($this->remote_host.$request, 'HTTP '.$this->result_status_code."\n".$this->result_body);
+        }
 
-	function getTransferSpeed()
-	{
-		return $this->lastTransferSpeed;
-	}
+        // now, if we're being passed a location header, should we follow it?
+        if ($this->doFollowLocationHeader)
+        {
+            if (isset($headers['location']))
+            {
+                $this->redirectURL = $headers['location'];
+                $this->query($headers['location']);
+            }
+        }
 
-	/**
-	 * The quick way to get a URL's content :)
-	 *
-	 * @param string URL
-	 * @param boolean return as array? (like PHP's file() command)
-	 * @return string result body
-	 */
-	function get($location, $asArray = FALSE )
-	{
-		$this->query($location);
+    }
 
-		if ( $this->get_status_code() == 200 )
-		{
-			if ($asArray)
-			{
-				return preg_split("/\n/",$this->fetch_body());
-			}
+    function getTransferSpeed()
+    {
+        return $this->lastTransferSpeed;
+    }
 
-			return $this->fetch_body();
-		}
+    /**
+     * The quick way to get a URL's content :)
+     *
+     * @param string URL
+     * @param boolean return as array? (like PHP's file() command)
+     * @return string result body
+     */
+    function get($location, $asArray = FALSE )
+    {
+        $this->query($location);
 
-		return FALSE;
-	}
+        if ( $this->get_status_code() == 200 )
+        {
+            if ($asArray)
+            {
+                return preg_split("/\n/",$this->fetch_body());
+            }
 
-	/**
-	 * Returns the last status code.
-	 * 200 = OK;
-	 * 403 = FORBIDDEN;
-	 * etc.
-	 *
-	 * @return int status code
-	 */
-	function get_status_code()
-	{
-		return $this->result_status_code;
-	}
+            return $this->fetch_body();
+        }
 
-	/**
-	 * Adds a header, sent with the next query.
-	 *
-	 * @param string header name
-	 * @param string header value
-	 */
-	function add_header($key,$value)
-	{
-		$this->extra_headers[$key] = $value;
-	}
+        return FALSE;
+    }
 
-	/**
-	 * Clears any extra headers.
-	 *
-	 */
-	function clear_headers()
-	{
-		$this->extra_headers = array();
-	}
+    /**
+     * Returns the last status code.
+     * 200 = OK;
+     * 403 = FORBIDDEN;
+     * etc.
+     *
+     * @return int status code
+     */
+    function get_status_code()
+    {
+        return $this->result_status_code;
+    }
 
-	/**
-	 * Return the result of a query.
-	 *
-	 * @return string result
-	 */
-	function fetch_result()
-	{
-		return $this->result;
-	}
+    /**
+     * Adds a header, sent with the next query.
+     *
+     * @param string header name
+     * @param string header value
+     */
+    function add_header($key,$value)
+    {
+        $this->extra_headers[$key] = $value;
+    }
 
-	/**
-	 * Return the header of result (stuff before body).
-	 *
-	 * @param string (optional) header to return
-	 * @return array result header
-	 */
-	function fetch_header( $header = '' )
-	{
-		$array_headers = preg_split("/\r\n/",$this->result_header);
-		
-		$array_return = array( 0 => $array_headers[0] );
-		unset($array_headers[0]);
+    /**
+     * Clears any extra headers.
+     *
+     */
+    function clear_headers()
+    {
+        $this->extra_headers = array();
+    }
 
-		foreach ( $array_headers as $pair )
-		{
-			list($key,$value) = preg_split("/: /",$pair,2);
-			$array_return[strtolower($key)] = $value;
-		}
+    /**
+     * Return the result of a query.
+     *
+     * @return string result
+     */
+    function fetch_result()
+    {
+        return $this->result;
+    }
 
-		if ( $header != '' )
-		{
-			return $array_return[strtolower($header)];
-		}
+    /**
+     * Return the header of result (stuff before body).
+     *
+     * @param string (optional) header to return
+     * @return array result header
+     */
+    function fetch_header( $header = '' )
+    {
+        $array_headers = preg_split("/\r\n/",$this->result_header);
 
-		return $array_return;
-	}
+        $array_return = array( 0 => $array_headers[0] );
+        unset($array_headers[0]);
 
-	/**
-	 * Return the body of result (stuff after header).
-	 *
-	 * @return string result body
-	 */
-	function fetch_body()
-	{
-		return $this->result_body;
-	}
+        foreach ( $array_headers as $pair )
+        {
+            list($key,$value) = preg_split("/: /",$pair,2);
+            $array_return[strtolower($key)] = $value;
+        }
 
-	/**
-	 * Return parsed body in array format.
-	 *
-	 * @return array result parsed
-	 */
-	function fetch_parsed_body()
-	{
-		parse_str($this->result_body,$x);
-		return $x;
-	}
-	
-	
-	// ===============
-	// === LOGGING ===
-	// ===============
-	
-	
-	protected $_logPath;
-	protected $_debugMode;
-	
-	public function setLogPath($path){
-		$this->_logPath = $path;
-	}
-	
-	public function setDebugMode($turnOn){
-		$this->_debugMode = (bool)$turnOn;
-	}
-	
-	public function logResponse($request, $response){
-		if (!$this->_logPath || !$this->_debugMode)
-			return false;
-		
-		$h = fopen($this->_logPath, 'a');
-		// make sure the file permissions are ok
-		chmod($this->_logPath, 0600);
-		fwrite($h, date('Y-m-d H:i:s') . "\n");
-		fwrite($h, "Request ".$request."\n");
-		fwrite($h, $response."\n\n");
-		fclose($h);
-		return true;
-	}
+        if ( $header != '' )
+        {
+            return $array_return[strtolower($header)];
+        }
+
+        return $array_return;
+    }
+
+    /**
+     * Return the body of result (stuff after header).
+     *
+     * @return string result body
+     */
+    function fetch_body()
+    {
+        return $this->result_body;
+    }
+
+    /**
+     * Return parsed body in array format.
+     *
+     * @return array result parsed
+     */
+    function fetch_parsed_body()
+    {
+        parse_str($this->result_body,$x);
+        return $x;
+    }
+
+
+    // ===============
+    // === LOGGING ===
+    // ===============
+
+
+    protected $_logPath;
+    protected $_debugMode;
+
+    public function setLogPath($path){
+        $this->_logPath = $path;
+    }
+
+    public function setDebugMode($turnOn){
+        $this->_debugMode = (bool)$turnOn;
+    }
+
+    public function logResponse($request, $response){
+        if (!$this->_logPath || !$this->_debugMode)
+            return false;
+
+        // phpcs:disable PHPCS_SecurityAudit.BadFunctions.FilesystemFunctions.WarnFilesystem
+        $h = fopen($this->_logPath, 'a');
+        // make sure the file permissions are ok
+        chmod($this->_logPath, 0600);
+        fwrite($h, date('Y-m-d H:i:s') . "\n");
+        fwrite($h, "Request ".$request."\n");
+        fwrite($h, $response."\n\n");
+        fclose($h);
+        // phpcs:enable PHPCS_SecurityAudit.BadFunctions.FilesystemFunctions.WarnFilesystem
+        return true;
+    }
 
 }

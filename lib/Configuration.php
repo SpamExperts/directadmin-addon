@@ -27,60 +27,67 @@
  */
 
 if (!defined('PLUGIN_NAME')) {
+    // phpcs:ignore PHPCS_SecurityAudit.BadFunctions.FilesystemFunctions.WarnFilesystem
     define('PLUGIN_NAME', basename(realpath(dirname(__FILE__) . '/../')));
 }
 
 class Configuration
 {
-	protected $_filename;
-	protected $_values;
+    protected $_filename;
+    protected $_values;
 
-	public function __construct($filename = null)
+    public function __construct($filename = null)
     {
         $this->_filename = PLUGIN_NAME . DS . 'configuration.conf';
-		if ($filename) {
+        if ($filename) {
             $this->_filename = PLUGIN_NAME . DS . $filename;
         }
-		
-		$this->_load();
-	}
-	
-	protected function _load()
+
+        $this->_load();
+    }
+
+    protected function _load()
     {
-		$path = dirname(__FILE__) . DS . '..' . DS . '..' . DS . $this->_filename;
-		if (!file_exists($path))
-			throw new Exception('Configuration file '.$this->_filename.' does not exists', 404);
-		
-		$file = str_replace('.conf', '', $this->_filename);
-		exec($this->_getConfigScriptPath() . ' --config '.$file, $output, $return);
-		
-		$this->_values = parse_ini_string(implode("\r\n", $output));
-	}
-	
-	public function get($key, $default = null)
+        // phpcs:ignore PHPCS_SecurityAudit.BadFunctions.FilesystemFunctions.WarnFilesystem
+        $path = dirname(__FILE__) . DS . '..' . DS . '..' . DS . $this->_filename;
+        // phpcs:ignore PHPCS_SecurityAudit.BadFunctions.FilesystemFunctions.WarnFilesystem
+        if (!file_exists($path))
+            throw new Exception('Configuration file '.$this->_filename.' does not exists', 404);
+
+        $file = str_replace('.conf', '', $this->_filename);
+        // phpcs:ignore PHPCS_SecurityAudit.BadFunctions.SystemExecFunctions.WarnSystemExec
+        exec($this->_getConfigScriptPath() . ' --config '.$file, $output, $return);
+
+        // phpcs:ignore PHPCS_SecurityAudit.BadFunctions.FilesystemFunctions.WarnFilesystem
+        $this->_values = parse_ini_string(implode("\r\n", $output));
+    }
+
+    public function get($key, $default = null)
     {
-		return isset($this->_values[$key]) ? stripslashes($this->_values[$key]) : $default;
-	}
-	
-	public function set($key, $value)
+        return isset($this->_values[$key]) ? stripslashes($this->_values[$key]) : $default;
+    }
+
+    public function set($key, $value)
     {
-		$this->_values[$key] = $value;
-	}
-	
-	public function save()
+        $this->_values[$key] = $value;
+    }
+
+    public function save()
     {
-		$str = '';
-		foreach ($this->_values as $k => $v) {
-			$str .= addslashes($k.'="'.addslashes($v).'"') . "\n";
-		}
-		
-		$file = str_replace('.conf', '', $this->_filename);
-		exec($this->_getConfigScriptPath() . ' --save '.$file.' "'.$str.'" 2>&1', $output, $return);
-	}
-	
-	private function _getConfigScriptPath()
+        $str = '';
+        foreach ($this->_values as $k => $v) {
+            $str .= addslashes($k.'="'.addslashes($v).'"') . "\n";
+        }
+
+        $file = str_replace('.conf', '', $this->_filename);
+        // phpcs:ignore PHPCS_SecurityAudit.BadFunctions.SystemExecFunctions.WarnSystemExec
+        exec($this->_getConfigScriptPath() . ' --save '.$file.' "'.$str.'" 2>&1', $output, $return);
+    }
+
+    private function _getConfigScriptPath()
     {
-		return realpath(dirname(__FILE__) . '/../') . '/scripts/getconfig';
-	}
-	
+        // phpcs:ignore PHPCS_SecurityAudit.BadFunctions.FilesystemFunctions.WarnFilesystem
+        return realpath(dirname(__FILE__) . '/../') . '/scripts/getconfig';
+    }
+
 }

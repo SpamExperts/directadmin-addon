@@ -25,6 +25,7 @@ class Branding {
     }
 
     public function setBrandNameFromFile() {
+        // phpcs:ignore PHPCS_SecurityAudit.BadFunctions.FilesystemFunctions.WarnFilesystem
         $branding = parse_ini_string($this->getBrandFileContent($this->pluginConf), true);
         $this->brandName = $branding['name'];
     }
@@ -53,6 +54,7 @@ class Branding {
         foreach ($this->files as $file) {
             $data = $this->getBrandFileContent($file);
             $replaced = str_replace($this->brandName, $brandName, $data);
+            // phpcs:ignore PHPCS_SecurityAudit.BadFunctions.SystemExecFunctions.WarnSystemExec
             exec(SE_BASE_DIR . DS . 'scripts' . DS . 'getconfig --brandsave ' . $file . ' "' . $replaced . '" 2>&1', $output);
             unset($data);
             unset($replaced);
@@ -71,6 +73,7 @@ class Branding {
     }
 
     private function getBrandFileContent($fileName) {
+        // phpcs:ignore PHPCS_SecurityAudit.BadFunctions.SystemExecFunctions.WarnSystemExec
         exec(SE_BASE_DIR . DS . 'scripts' . DS . 'getconfig --brandget ' . $fileName, $content, $return);
         if (sizeof($content) > 1) {
             $data = implode("\n", $content);
@@ -89,18 +92,22 @@ class Branding {
         if ($replaced == $data) {
             $replaced = str_replace($this->brandName, '\"' . $brandName . '\"', $data);
         }
+        // phpcs:ignore PHPCS_SecurityAudit.BadFunctions.SystemExecFunctions.WarnSystemExec
         exec(SE_BASE_DIR . DS . 'scripts' . DS . 'getconfig --brandsave ' . $this->pluginConf . ' "' . $replaced . '" 2>&1', $output);
         return $output;
     }
 
     public function setBrandLogo($filePath) {
+        // phpcs:ignore PHPCS_SecurityAudit.BadFunctions.SystemExecFunctions.WarnSystemExec
         if (0 == shell_exec(SE_BASE_DIR . DS . 'scripts' . DS . 'getconfig --mvLogo ' . $filePath . ' ' . SE_BASE_DIR . DS . 'images' . DS . 'logo.jpg')) {
             return true;
         }
     }
 
     public function validateLogo($filePath) {
+        // phpcs:ignore PHPCS_SecurityAudit.BadFunctions.SystemExecFunctions.WarnSystemExec
         exec(SE_BASE_DIR . DS . 'scripts' . DS . 'getconfig --chmodFile ' . $filePath, $output); // get permission to do that
+        // phpcs:ignore PHPCS_SecurityAudit.BadFunctions.FilesystemFunctions.WarnFilesystem
         $imageInfo = getimagesize($filePath);
         if ($imageInfo['mime'] == "image/jpeg" && $imageInfo[0] <= $this->maxLogoWidth && $imageInfo[1] <= $this->maxLogoHeight) {
             return true;
