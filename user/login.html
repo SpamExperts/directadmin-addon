@@ -7,24 +7,24 @@ echo pasteAssets();
 $domain = getParam('domain');
 
 if (!$domain){
-	echo '<div class="alert alert-danger">No domain provided</div>';
-	die();
+    echo '<div class="alert alert-danger">No domain provided</div>';
+    die();
 }
 
 try {
-	$conf = new Configuration();
-	$api = new SpamExperts_API( $conf->get('api_hostname'), $conf->get('api_username'), $conf->get('api_password') );
-	$DAapi = new DirectAdmin_API();
-	
-	if (!$DAapi->isUsersDomain($domain))
-		throw new Exception("This domain does not belong to you");
+    $conf = new Configuration();
+    $api = new SpamExperts_API( $conf->get('api_hostname'), $conf->get('api_username'), $conf->get('api_password') );
+    $DAapi = new DirectAdmin_API();
 
-	$res = $api->login( $domain );
-	$msg = $res ? 'Logging for '.$domain.' successful. Please wait...' : 'Unable to get login token for ' . $domain;
+    if (!$DAapi->isUsersDomain($domain))
+        throw new Exception("This domain does not belong to you");
+
+    $res = $api->login( $domain );
+    $msg = $res ? 'Logging for '.$domain.' successful. Please wait...' : 'Unable to get login token for ' . $domain;
 
 } catch (Exception $e){
-	echo '<div class="alert alert-danger">'.$e->getMessage().'</div>';
-	die();
+    echo '<div class="alert alert-danger">'.$e->getMessage().'</div>';
+    die();
 }
 
 ?>

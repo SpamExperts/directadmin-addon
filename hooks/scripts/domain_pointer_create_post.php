@@ -32,37 +32,37 @@
  */
 $domain = $argv[1];
 if (!$domain)
-	die('Error: empty domain');
+    die('Error: empty domain');
 
-include_once dirname(__FILE__) . '/../../lib/plugin.php';
+include_once __DIR__ . '/../../lib/plugin.php';
 
 $conf = new Configuration();
 if ($conf->get('automatically_add_domains') &&
     $conf->get('process_addon_and_parked_domains')
 ) {
-	
-	// auto-adding to spamexperts
-	echo 'Adding pointer domain '.$domain.' to SpamExperts<br/>';
-	
-	$hostname = $conf->get('api_hostname');
-	$username = $conf->get('api_username');
-	$password = $conf->get('api_password');
-	
-	// no credentials in configuration
-	if (!$hostname || !$username || !$password)
-		die('Unable to add pointer domain to SpamExperts - check credentials on plugin\'s configuration');
-	
-	$api = new SpamExperts_API($hostname, $username, $password);
-	$res = $api->protectDomains(array($domain), $conf, new DirectAdmin_API());
-	
-	if (isset($res[$domain]['result'])){
-		
-		die( $res[$domain]['result'] ? 'Pointer domain has been added to the SpamExperts' : 'Error during adding pointer domain to the SpamExperts' );
-		
-	} else {
-		die('Error during adding pointer domain to the SpamExperts');
-	}
-	
+
+    // auto-adding to spamexperts
+    echo 'Adding pointer domain '.$domain.' to SpamExperts<br/>';
+
+    $hostname = $conf->get('api_hostname');
+    $username = $conf->get('api_username');
+    $password = $conf->get('api_password');
+
+    // no credentials in configuration
+    if (!$hostname || !$username || !$password)
+        die('Unable to add pointer domain to SpamExperts - check credentials on plugin\'s configuration');
+
+    $api = new SpamExperts_API($hostname, $username, $password);
+    $res = $api->protectDomains(array($domain), $conf, new DirectAdmin_API());
+
+    if (isset($res[$domain]['result'])){
+
+        die( $res[$domain]['result'] ? 'Pointer domain has been added to the SpamExperts' : 'Error during adding pointer domain to the SpamExperts' );
+
+    } else {
+        die('Error during adding pointer domain to the SpamExperts');
+    }
+
 } else {
-	// auto-adding to spamexperts disabled -> no action
+    // auto-adding to spamexperts disabled -> no action
 }

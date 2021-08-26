@@ -24,11 +24,11 @@ chown -R diradmin:diradmin $pluginpath/*
 
 # creating configuration files
 for conf in configuration.conf directadminapi.conf plugin.conf; do
-	if [ ! -e "$pluginpath$conf" ] ; then
-		touch "$pluginpath$conf"
-	fi
-	chmod 660 "$pluginpath$conf"
-	chown diradmin:diradmin "$pluginpath$conf"
+  if [ ! -e "$pluginpath$conf" ] ; then
+    touch "$pluginpath$conf"
+  fi
+  chmod 660 "$pluginpath$conf"
+  chown diradmin:diradmin "$pluginpath$conf"
 done
 
 chown root:root "$pluginpath/scripts/getconfig" 2>&1

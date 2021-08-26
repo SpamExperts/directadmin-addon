@@ -137,7 +137,7 @@ class DirectAdmin_DNS
             CURLOPT_TIMEOUT => 30
         );
         curl_setopt_array($ch, $chOptions);
-        $out = curl_exec($ch); 
+        $out = curl_exec($ch);
        
         if($out === false) 
         {
@@ -447,7 +447,7 @@ class DirectAdmin_DNS
                 $add[] = $record;
             }
            
-        }      
+        }
         $this->delete($delete);
         $this->add($add);
     }

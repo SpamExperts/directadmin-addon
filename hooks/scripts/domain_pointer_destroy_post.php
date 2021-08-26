@@ -33,37 +33,37 @@
 
 $domain = $argv[1];
 if (!$domain)
-	die('Error: empty domain');
+    die('Error: empty domain');
 
-include_once dirname(__FILE__) . '/../../lib/plugin.php';
+include_once __DIR__ . '/../../lib/plugin.php';
 
 $conf = new Configuration();
 if ($conf->get('automatically_delete_domains') &&
     $conf->get('process_addon_and_parked_domains')
 ) {
-	
-	// auto-adding to spamexperts
-	echo 'Deleting domain '.$domain.' from the SpamExperts<br/>';
-	
-	$hostname = $conf->get('api_hostname');
-	$username = $conf->get('api_username');
-	$password = $conf->get('api_password');
-	
-	// no credentials in configuration
-	if (!$hostname || !$username || !$password)
-		die('Unable to delete pointer domain from the SpamExperts - check credentials on plugin\'s configuration');
-	
-	$api = new SpamExperts_API($hostname, $username, $password);
-	$res = $api->unprotectDomains(array($domain), $conf, new DirectAdmin_API());
-	
-	if (isset($res[$domain]['result'])){
-		
-		die( $res[$domain]['result'] ? 'Pointer domain has been deleted from the SpamExperts' : 'Error during deleting pointer domain from the SpamExperts' );
-		
-	} else {
-		die('Error during pointer domain removal in SpamExperts ControlPanel');
-	}
-	
+
+    // auto-adding to spamexperts
+    echo 'Deleting domain '.$domain.' from the SpamExperts<br/>';
+
+    $hostname = $conf->get('api_hostname');
+    $username = $conf->get('api_username');
+    $password = $conf->get('api_password');
+
+    // no credentials in configuration
+    if (!$hostname || !$username || !$password)
+        die('Unable to delete pointer domain from the SpamExperts - check credentials on plugin\'s configuration');
+
+    $api = new SpamExperts_API($hostname, $username, $password);
+    $res = $api->unprotectDomains(array($domain), $conf, new DirectAdmin_API());
+
+    if (isset($res[$domain]['result'])){
+
+        die( $res[$domain]['result'] ? 'Pointer domain has been deleted from the SpamExperts' : 'Error during deleting pointer domain from the SpamExperts' );
+
+    } else {
+        die('Error during pointer domain removal in SpamExperts ControlPanel');
+    }
+
 } else {
-	// auto-adding to spamexperts disabled -> no action
+    // auto-adding to spamexperts disabled -> no action
 }

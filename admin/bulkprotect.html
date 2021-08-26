@@ -11,94 +11,94 @@ $conf = new Configuration();
 ?>
 
 <div class="moduleContent">
-	
-	<div id="startOutput">
-		<?php if (!$conf->get("bulkprotect_date")) { ?>
-			<div class="alert alert-info">
-				You have not executed a bulk protect yet.<br/>
-				This is recommended to protect all domains on this server.
-			</div>
-		<?php } ?>
 
-		<div style="padding:5px;">
-			On this page you can add all current domains to the spam filter.
-			Depending on the settings it may (or may not) execute certain actions.
-			It is generally not required to run this more than once after the installation.
-			Running bulk protect is usually only necessary after the first installation.
-		</div>
+    <div id="startOutput">
+        <?php if (!$conf->get("bulkprotect_date")) { ?>
+            <div class="alert alert-info">
+                You have not executed a bulk protect yet.<br/>
+                This is recommended to protect all domains on this server.
+            </div>
+        <?php } ?>
 
-		<div class="alert alert-info">
-			Bulk protect has been executed last at: <strong><?php echo $conf->get("bulkprotect_date") ? $conf->get("bulkprotect_date") : 'never'; ?></strong>
-		</div>
+        <div style="padding:5px;">
+            On this page you can add all current domains to the spam filter.
+            Depending on the settings it may (or may not) execute certain actions.
+            It is generally not required to run this more than once after the installation.
+            Running bulk protect is usually only necessary after the first installation.
+        </div>
 
-		<a href="" id="bulkprotect" class="btn btn-primary">Execute Bulk Protect</a>
-	</div>
-	
-	<div id="processOutput" style="display:none;">
-		<div class="alert alert-warning">BULK PROTECTING, DO NOT RELOAD THIS PAGE!</div>
-		
-		<div>
-			Results will be shown here when the process has finished<br/>
-			It might take a while, especially if you have many domains or a slow connection.<br/>
-			<br/>
-			Please be patient while we're running the bulk protector.
-		</div>
-		
-		<strong>Progress:</strong>
-		<span id="number_done">0</span>
-		/
-		<span id="number_total">0</span>
-		<div class="progressContainer">
-			<div class="progress">
-				<div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100">
-				  <span class="sr-only"></span>
-				</div>
-			</div>
-		</div>
-		
-		<div class="alert alert-info" id="timeRemaining">
-			<strong>Estimated time remaining</strong><br/>
-			<span id="timeRemaining_value">Calculating...</span>
-		</div>
-		
-		<!--
-		<table class="table" id="domainsstats">
-			<thead>
-				<tr>
-					<th>Added domains</th>
-					<th>Failed domains</th>
-					<th>Normal domains</th>
-					<th>Parked domains</th>
-					<th>Addon domains</th>
-					<th>Skipped domains</th>
-					<th>Updated domains</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td>0</td>
-					<td>0</td>
-					<td>0</td>
-					<td>0</td>
-					<td>0</td>
-					<td>0</td>
-					<td>0</td>
-				</tr>
-			</tbody>
-		</table>
-		-->
-		<table class="table" id="domainslist">
-			<thead>
-				<tr>
-					<th>Domain</th>
-					<th>Status</th>
-				</tr>
-			</thead>
-			<tbody>
-			</tbody>
-		</table>
-	</div>
-	
+        <div class="alert alert-info">
+            Bulk protect has been executed last at: <strong><?php echo $conf->get("bulkprotect_date") ? $conf->get("bulkprotect_date") : 'never'; ?></strong>
+        </div>
+
+        <a href="" id="bulkprotect" class="btn btn-primary">Execute Bulk Protect</a>
+    </div>
+
+    <div id="processOutput" style="display:none;">
+        <div class="alert alert-warning">BULK PROTECTING, DO NOT RELOAD THIS PAGE!</div>
+
+        <div>
+            Results will be shown here when the process has finished<br/>
+            It might take a while, especially if you have many domains or a slow connection.<br/>
+            <br/>
+            Please be patient while we're running the bulk protector.
+        </div>
+
+        <strong>Progress:</strong>
+        <span id="number_done">0</span>
+        /
+        <span id="number_total">0</span>
+        <div class="progressContainer">
+            <div class="progress">
+                <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100">
+                  <span class="sr-only"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info" id="timeRemaining">
+            <strong>Estimated time remaining</strong><br/>
+            <span id="timeRemaining_value">Calculating...</span>
+        </div>
+
+        <!--
+        <table class="table" id="domainsstats">
+            <thead>
+                <tr>
+                    <th>Added domains</th>
+                    <th>Failed domains</th>
+                    <th>Normal domains</th>
+                    <th>Parked domains</th>
+                    <th>Addon domains</th>
+                    <th>Skipped domains</th>
+                    <th>Updated domains</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>0</td>
+                </tr>
+            </tbody>
+        </table>
+        -->
+        <table class="table" id="domainslist">
+            <thead>
+                <tr>
+                    <th>Domain</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
 </div>
 
 
@@ -113,93 +113,93 @@ var startTime = new Date().getTime();
 
 $(document).ready(function(){
 
-	$('#bulkprotect').click(function(){
-		
-		if (!confirm('Are you sure to run bulk protect action?'))
-			return false;
-		
-		$('#startOutput').remove();
-		$('#processOutput').show();
-		var $domainslist = $('#domainslist');
-		
-		// get all of domains
-		$.get('ajax.html', {'action':'listDaDomains', 'iframe': 'yes'}, function(res){
-			var json = parseAjaxResponse(res);
-			if (typeof json.success != 'undefined'){
-				var domains = [];
-				$.each(json.domains, function(d,v){
-					domains.push(d);
-				});
-			} else {
-				alert('Wrong server response. Try again later.');
-				return false;
-			}
-			
-			$('#number_total').text(domains.length);
-		
-			var $bar = $('.progressContainer');
-			updateProgressBar($bar, 0);
+    $('#bulkprotect').click(function(){
 
-			var parts = Math.ceil( domains.length / numberOfDomainsAtOnce );
-			for (var p = 0; p < parts; p++){
-				var toSend = [];
-				for (var i = p * numberOfDomainsAtOnce; i < (p+1) * numberOfDomainsAtOnce; i++){
-					if (typeof domains[i] != 'undefined'){
-						toSend.push( domains[i] );
-						domainsNumber++;
-					}
-				}
-				domainsParts.push(toSend);
+        if (!confirm('Are you sure to run bulk protect action?'))
+            return false;
 
-				setTimeout(function(){
-					$.each(domainsParts, function(i,v){
-						// send ajax with X domains
-						$.ajax({
-							url: 'ajax.html',
-							data: {'action': 'protectDomains', 'domains': v, 'iframe': 'yes'}
-						}).done(function(res){
-							var json = parseAjaxResponse(res);
-							if (typeof json.results != 'undefined'){
-								domainsDone += numberOfDomainsAtOnce;
-								percentDone = Math.round( domainsDone / domainsNumber * 100 );
-								updateProgressBar($bar, percentDone);
-								updateTimeRemaining(percentDone);
-								$('#number_done').text(domainsDone);
+        $('#startOutput').remove();
+        $('#processOutput').show();
+        var $domainslist = $('#domainslist');
 
-								$.each(json.results, function(domain,v){
-									var errormsg = typeof v.msg != 'undefined' ? v.msg : 'Error';
-									$domainslist.append('<tr><td>'+domain+'</td><td>'+(v.result == true ? '<span class="simple-success">Domain has been added</span>' : '<span class="simple-error">'+errormsg+'</span>')+'</td></tr>');
-								});
-							} else {
-								alert('Wrong server response. Try again later.');
-							}
-						});
-						domainsParts.splice(0, 1);
-						return false;
-					});
-				}, p * numberOfDomainsAtOnce * numberOfSecondsPerOne * 1000);
-			}
-			
-			setTimeout(function(){
-				$.get('ajax.html', {'action':'updateBulkprotectDate', 'iframe': 'yes'});
-			}, p * numberOfDomainsAtOnce * numberOfSecondsPerOne * 1000);
-		});
-		
-		return false;
-	});
-	
-	/*
-	 * 10:30:00 -> start
-	 * 10:32:00 -> 40%		-> remaining 300s	(40% * Xs = 100% * 120s)
-	 */
-	function updateTimeRemaining(percent){
-		var nowtime = new Date().getTime();
-		var secondsRemaining = percent > 0 ? (nowtime - startTime) / 1000 / (percent / 100) : 0;
-		
-		var minutes = Math.floor( secondsRemaining / 60 );
-		var seconds = Math.round( secondsRemaining - minutes * 60 );
-		$('#timeRemaining_value').html(minutes + ' minutes, '+seconds+' seconds');
-	}
-	
+        // get all of domains
+        $.get('ajax.html', {'action':'listDaDomains', 'iframe': 'yes'}, function(res){
+            var json = parseAjaxResponse(res);
+            if (typeof json.success != 'undefined'){
+                var domains = [];
+                $.each(json.domains, function(d,v){
+                    domains.push(d);
+                });
+            } else {
+                alert('Wrong server response. Try again later.');
+                return false;
+            }
+
+            $('#number_total').text(domains.length);
+
+            var $bar = $('.progressContainer');
+            updateProgressBar($bar, 0);
+
+            var parts = Math.ceil( domains.length / numberOfDomainsAtOnce );
+            for (var p = 0; p < parts; p++){
+                var toSend = [];
+                for (var i = p * numberOfDomainsAtOnce; i < (p+1) * numberOfDomainsAtOnce; i++){
+                    if (typeof domains[i] != 'undefined'){
+                        toSend.push( domains[i] );
+                        domainsNumber++;
+                    }
+                }
+                domainsParts.push(toSend);
+
+                setTimeout(function(){
+                    $.each(domainsParts, function(i,v){
+                        // send ajax with X domains
+                        $.ajax({
+                            url: 'ajax.html',
+                            data: {'action': 'protectDomains', 'domains': v, 'iframe': 'yes'}
+                        }).done(function(res){
+                            var json = parseAjaxResponse(res);
+                            if (typeof json.results != 'undefined'){
+                                domainsDone += numberOfDomainsAtOnce;
+                                percentDone = Math.round( domainsDone / domainsNumber * 100 );
+                                updateProgressBar($bar, percentDone);
+                                updateTimeRemaining(percentDone);
+                                $('#number_done').text(domainsDone);
+
+                                $.each(json.results, function(domain,v){
+                                    var errormsg = typeof v.msg != 'undefined' ? v.msg : 'Error';
+                                    $domainslist.append('<tr><td>'+domain+'</td><td>'+(v.result == true ? '<span class="simple-success">Domain has been added</span>' : '<span class="simple-error">'+errormsg+'</span>')+'</td></tr>');
+                                });
+                            } else {
+                                alert('Wrong server response. Try again later.');
+                            }
+                        });
+                        domainsParts.splice(0, 1);
+                        return false;
+                    });
+                }, p * numberOfDomainsAtOnce * numberOfSecondsPerOne * 1000);
+            }
+
+            setTimeout(function(){
+                $.get('ajax.html', {'action':'updateBulkprotectDate', 'iframe': 'yes'});
+            }, p * numberOfDomainsAtOnce * numberOfSecondsPerOne * 1000);
+        });
+
+        return false;
+    });
+
+    /*
+     * 10:30:00 -> start
+     * 10:32:00 -> 40%		-> remaining 300s	(40% * Xs = 100% * 120s)
+     */
+    function updateTimeRemaining(percent){
+        var nowtime = new Date().getTime();
+        var secondsRemaining = percent > 0 ? (nowtime - startTime) / 1000 / (percent / 100) : 0;
+
+        var minutes = Math.floor( secondsRemaining / 60 );
+        var seconds = Math.round( secondsRemaining - minutes * 60 );
+        $('#timeRemaining_value').html(minutes + ' minutes, '+seconds+' seconds');
+    }
+
 });
 </script>

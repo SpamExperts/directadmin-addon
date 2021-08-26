@@ -26,13 +26,13 @@ done;
 echo "Adding hooks to DirectAdmin<br/>"
 
 for hook in domain_create_post domain_destroy_post domain_pointer_create_post domain_pointer_destroy_post; do
-	if [ -e "$pluginpath../../scripts/custom/$hook.sh" ] ; then
-		echo "WARNING! - hook file '$hook.sh' already exist<br/>";
-	else
-		cp "$pluginpath/scripts/hooks/$hook.sh" "$pluginpath../../scripts/custom/"
-		chmod 770 "$pluginpath../../scripts/custom/$hook.sh"
-		chown diradmin:diradmin "$pluginpath../../scripts/custom/$hook.sh"
-	fi
+  if [ -e "$pluginpath../../scripts/custom/$hook.sh" ] ; then
+    echo "WARNING! - hook file '$hook.sh' already exist<br/>";
+  else
+    cp "$pluginpath/scripts/hooks/$hook.sh" "$pluginpath../../scripts/custom/"
+    chmod 770 "$pluginpath../../scripts/custom/$hook.sh"
+    chown diradmin:diradmin "$pluginpath../../scripts/custom/$hook.sh"
+  fi
 done;
 
 echo "Creating configuration files<br/>"
@@ -42,11 +42,11 @@ chown -R diradmin:diradmin $pluginpath/*
 
 # creating configuration files
 for conf in configuration.conf directadminapi.conf plugin.conf; do
-	if [ ! -e "$pluginpath$conf" ] ; then
-		touch "$pluginpath$conf"
-	fi
-	chmod 660 "$pluginpath$conf"
-	chown diradmin:diradmin "$pluginpath$conf"
+  if [ ! -e "$pluginpath$conf" ] ; then
+    touch "$pluginpath$conf"
+  fi
+  chmod 660 "$pluginpath$conf"
+  chown diradmin:diradmin "$pluginpath$conf"
 done;
 
 chown root:root "$pluginpath/scripts/getconfig" 2>&1
