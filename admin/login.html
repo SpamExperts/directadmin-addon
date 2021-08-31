@@ -9,24 +9,24 @@ echo $menu->render('');
 $domain = getParam('domain');
 
 if (!$domain){
-	echo '<div class="alert alert-danger">No domain provided</div>';
-	die();
+    echo '<div class="alert alert-danger">No domain provided</div>';
+    die();
 }
 
 try {
-	$conf = new Configuration();
-	$api = new SpamExperts_API( $conf->get('api_hostname'), $conf->get('api_username'), $conf->get('api_password') );
+    $conf = new Configuration();
+    $api = new SpamExperts_API( $conf->get('api_hostname'), $conf->get('api_username'), $conf->get('api_password') );
 
-	if ($conf->get('add_domain_during_login')){
-		$api->protectDomains( array($domain), $conf, new DirectAdmin_API() );
-	}
+    if ($conf->get('add_domain_during_login')){
+        $api->protectDomains( array($domain), $conf, new DirectAdmin_API() );
+    }
 
-	$res = $api->login( $domain );
-	$msg = $res ? 'Logging for '.$domain.' successful. Please wait...' : 'Unable to get login token for ' . $domain;
+    $res = $api->login( $domain );
+    $msg = $res ? 'Logging for '.$domain.' successful. Please wait...' : 'Unable to get login token for ' . $domain;
 
 } catch (Exception $e){
-	echo '<div class="alert alert-danger">'.$e->getMessage().'</div>';
-	die();
+    echo '<div class="alert alert-danger">'.$e->getMessage().'</div>';
+    die();
 }
 
 ?>

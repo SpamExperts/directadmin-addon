@@ -28,24 +28,24 @@
 
 class DirectAdmin_Domain {
 
-	public $domain;
-	public $username;
-	public $pointsto;
+    public $domain;
+    public $username;
+    public $pointsto;
 
-	public function __construct($domain, $username, $pointsto = null){
-		$this->domain = $domain;
-		$this->username = $username;
-		$this->pointsto = $pointsto;
-	}
-	
-	/**
-	 * Checks first MX record
-	 * @return bool
-	 */
-	public function isRemote(){
-		$api = new DirectAdmin_API();
-		$records = $api->getDomainsMxRecords($this->domain, $this->username);
-		return isset($records[0]['isRemote']) && $records[0]['isRemote'];
-	}
-	
+    public function __construct($domain, $username, $pointsto = null){
+        $this->domain = $domain;
+        $this->username = $username;
+        $this->pointsto = $pointsto;
+    }
+
+    /**
+     * Checks first MX record
+     * @return bool
+     */
+    public function isRemote(){
+        $api = new DirectAdmin_API();
+        $records = $api->getDomainsMxRecords($this->domain, $this->username);
+        return isset($records[0]['isRemote']) && $records[0]['isRemote'];
+    }
+
 }
