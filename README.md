@@ -4,7 +4,7 @@
 An add-on for [DirectAdmin control panel](http://directadmin.com) providing integration with SpamExperts services.
 
 ## Documentation
-Documentation can be found [here](https://my.spamexperts.com/kb/50/DirectAdmin-addon.html "SpamExperts' Knowledge base")
+Documentation can be found [here](https://documentation.n-able.com/spamexperts/userguide/Content/Integration/directadmin-addon.htm "SpamExperts' Knowledge base")
 
 ### Using DirectAdmin login keys
 
