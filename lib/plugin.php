@@ -33,12 +33,12 @@ if (!defined('SE_BASE_DIR')){
 if (!defined('DS'))
     define('DS', DIRECTORY_SEPARATOR);
 
-function __autoload($class_name) {
+spl_autoload_register(function ($class_name) {
     $path = __DIR__ . DS . $class_name . '.php';
     if (!file_exists($path))
         throw new Exception('File '.$path.' does not exists!');
     include_once $path;
-}
+});
 
 function pasteAssets(){
     return '
