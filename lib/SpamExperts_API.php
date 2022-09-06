@@ -263,8 +263,9 @@ class SpamExperts_API {
                 continue;
             }
 
-            // in case the result doesn’t contain errors it is safe to assume that the domain has been removed (unprotected) successfully.
+            // in case the result doesn't contain errors it is safe to assume that the domain has been removed (unprotected) successfully.
             if (!isset($json['messages']['error']) || empty($json['messages']['error'])) {
+                $dns = $daApi->getDns($domain);
                 if ($conf->get('automatically_change_mx')) {
                     $newMX = array();
                     foreach ($routes as $key => $route) {
@@ -281,7 +282,6 @@ class SpamExperts_API {
                         }
                     }
 
-                    $dns = $daApi->getDns($domain);
                     $currentMX = $dns->getRecords('MX');
 
                     if ($currentMX) {
@@ -290,15 +290,13 @@ class SpamExperts_API {
                     $dns->modify($newMX);
                 }
 
-                //last chance: check if we have some mx, if not use hostname
-                $currentMX = $dns->getRecords('MX');
-
-                if (!$currentMX) {
+                // last chance: check if we have some mx, if not use hostname
+                if (!$dns->getRecords('MX')) {
                     $newMX[] = array(
                         'type' => 'MX',
                         'name' => gethostname().".",
                         'value' => '',
-                        'priority' => (1 + $key) * 10,
+                        'priority' => 10,
                     );
 
                     $dns->modify($newMX);
