@@ -94,18 +94,17 @@ class Branding {
     }
 
     public function setBrandLogo($filePath) {
-        if (0 == shell_exec(SE_BASE_DIR . DS . 'scripts' . DS . 'getconfig --mvLogo ' . $filePath . ' ' . SE_BASE_DIR . DS . 'images' . DS . 'logo.jpg')) {
-            return true;
-        }
+        $command = SE_BASE_DIR . DS . 'scripts' . DS . 'getconfig --mvLogo ' . $filePath . ' ' . SE_BASE_DIR . DS . 'images' . DS . 'logo.jpg';
+        exec($command, $output, $retval);
+        return 0 === $retval;
     }
 
     public function validateLogo($filePath) {
         exec(SE_BASE_DIR . DS . 'scripts' . DS . 'getconfig --chmodFile ' . $filePath, $output); // get permission to do that
         $imageInfo = getimagesize($filePath);
-        if ($imageInfo['mime'] == "image/jpeg" && $imageInfo[0] <= $this->maxLogoWidth && $imageInfo[1] <= $this->maxLogoHeight) {
-            return true;
-        }
-        false;
+        return $imageInfo['mime'] === "image/jpeg"
+            && $imageInfo[0] <= $this->maxLogoWidth
+            && $imageInfo[1] <= $this->maxLogoHeight;
     }
 
     public function getMaxLogoWidth() {

@@ -8,6 +8,7 @@ class DirectAdmin_HTTPSocket extends HTTPSocket {
 
     protected $_logPath;
     protected $_debugMode;
+    protected $_loggedResponse = false;
 
     /**
      * Query the server
@@ -20,8 +21,10 @@ class DirectAdmin_HTTPSocket extends HTTPSocket {
     {
         parent::query($request, $content, $doSpeedCheck);
 
-        if ($this->_debugMode){
-            $this->logResponse($this->remote_host.$request, 'HTTP '.$this->result_status_code."\n".$this->result_body);
+        if ($this->_debugMode && !$this->_loggedResponse) {
+            $requestUrl = strpos($request, '://') === false ? $this->remote_host.$request : $request;
+            $this->logResponse($requestUrl, 'HTTP '.$this->result_status_code."\n".$this->result_body);
+            $this->_loggedResponse = true;
         }
     }
 

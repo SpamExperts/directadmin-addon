@@ -29,6 +29,7 @@
 class SpamExperts_API {
 
     protected $_host;
+    protected $_port;
     protected $_login;
     protected $_pass;
 
@@ -40,6 +41,15 @@ class SpamExperts_API {
      */
     public function __construct($hostname, $username, $password){
         $this->_host = $hostname;
+        $this->_port = 80;
+
+        if (
+            preg_match('!^ssl://!i', $hostname)
+            || preg_match('!^https://!i', $hostname)
+        ) {
+            $this->_port = 443;
+        }
+
         $this->_login = $username;
         $this->_pass = $password;
     }
@@ -253,8 +263,9 @@ class SpamExperts_API {
                 continue;
             }
 
-            // in case the result doesn’t contain errors it is safe to assume that the domain has been removed (unprotected) successfully.
+            // in case the result doesn't contain errors it is safe to assume that the domain has been removed (unprotected) successfully.
             if (!isset($json['messages']['error']) || empty($json['messages']['error'])) {
+                $dns = $daApi->getDns($domain);
                 if ($conf->get('automatically_change_mx')) {
                     $newMX = array();
                     foreach ($routes as $key => $route) {
@@ -271,7 +282,6 @@ class SpamExperts_API {
                         }
                     }
 
-                    $dns = $daApi->getDns($domain);
                     $currentMX = $dns->getRecords('MX');
 
                     if ($currentMX) {
@@ -280,15 +290,13 @@ class SpamExperts_API {
                     $dns->modify($newMX);
                 }
 
-                //last chance: check if we have some mx, if not use hostname
-                $currentMX = $dns->getRecords('MX');
-
-                if (!$currentMX) {
+                // last chance: check if we have some mx, if not use hostname
+                if (!$dns->getRecords('MX')) {
                     $newMX[] = array(
                         'type' => 'MX',
                         'name' => gethostname().".",
                         'value' => '',
-                        'priority' => (1 + $key) * 10,
+                        'priority' => 10,
                     );
 
                     $dns->modify($newMX);
@@ -304,7 +312,7 @@ class SpamExperts_API {
 
     protected function _getSocket(){
         $sock = new DirectAdmin_HTTPSocket();
-        $sock->connect($this->_host, 80);
+        $sock->connect($this->_host, $this->_port);
         $sock->set_login($this->_login, $this->_pass);
 
         $pluginDir = dirname(dirname(__FILE__));

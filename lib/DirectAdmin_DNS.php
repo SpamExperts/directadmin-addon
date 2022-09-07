@@ -134,6 +134,7 @@ class DirectAdmin_DNS
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_SSL_VERIFYPEER => false,
             CURLOPT_SSL_VERIFYHOST => false,
+            CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_TIMEOUT => 30
         );
         curl_setopt_array($ch, $chOptions);
@@ -258,7 +259,7 @@ class DirectAdmin_DNS
         foreach($exploded as $ex)
         {
             $line = explode('=', $ex, 2);
-            $data = explode('&', $line[1]);
+            $data = explode('&', $line[1] ?? '');
             foreach($data as $d)
             {
                 $x = explode('=', $d, 2);
@@ -423,15 +424,25 @@ class DirectAdmin_DNS
         }
 
         $delete = array();
-        $add = array(); 
+        $add = array();
         foreach($data as $key => $record)
         {  
-            $record['type'] = strtoupper($record['type']); 
+            $record['type'] = strtoupper($record['type']);
             $diff = false;
-            switch($record['type']){
-                case 'MX' : if($records[$record['line']]['name'] != $record['name'] || $records[$record['line']]['value'] != $record['value'] || $records[$record['line']]['priority'] != $record['priority']) $diff = true; break;
-                case 'SRV': if($records[$record['line']]['name'] != $record['name'] || $records[$record['line']]['value'] != $record['value'] || $records[$record['line']]['priority'] != $record['priority'] || $records[$record['line']]['weight'] != $record['weight'] || $records[$record['line']]['port'] != $record['port']) $diff = true; break;
-                default   : if($records[$record['line']]['name'] != $record['name'] || $records[$record['line']]['value'] != $record['value']) $diff = true; break;
+            if (!array_key_exists('line', $record)) {
+                $diff = true;
+            } else {
+                switch ($record['type']) {
+                    case 'MX' :
+                        if ($records[$record['line']]['name'] != $record['name'] || $records[$record['line']]['value'] != $record['value'] || $records[$record['line']]['priority'] != $record['priority']) $diff = true;
+                        break;
+                    case 'SRV':
+                        if ($records[$record['line']]['name'] != $record['name'] || $records[$record['line']]['value'] != $record['value'] || $records[$record['line']]['priority'] != $record['priority'] || $records[$record['line']]['weight'] != $record['weight'] || $records[$record['line']]['port'] != $record['port']) $diff = true;
+                        break;
+                    default   :
+                        if ($records[$record['line']]['name'] != $record['name'] || $records[$record['line']]['value'] != $record['value']) $diff = true;
+                        break;
+                }
             }
             if($diff === true)
             {   
@@ -443,7 +454,10 @@ class DirectAdmin_DNS
                     $this->results[] = array('success' => 0, 'info' => ''.(isset($_LANG['directadmin_error2']) ? $_LANG['directadmin_error2'] : 'Error occured: Cannot Add Record. Invalid \'value\' field. At the end of the domain name must be a .dot'));
                     return false;
                 }
-                $delete[] = $records[$record['line']];
+
+                if (array_key_exists('line', $record)) {
+                    $delete[] = $records[$record['line']];
+                }
                 $add[] = $record;
             }
            
@@ -461,6 +475,9 @@ class DirectAdmin_DNS
 
         foreach($data as $record)
         {
+            if (empty($record)) {
+                continue;
+            }
             $record['type'] = strtoupper($record['type']);
             $out['domain'] = $this->domain;
             $out['action'] = 'select';

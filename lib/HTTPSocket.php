@@ -166,15 +166,18 @@ class HTTPSocket {
             $location = parse_url($request);
             if (preg_match('!^https://!i',$request))
             {
-                $this->connect('https://'.$location['host'],$location['port']);
+                // use https default port if no custom port is specified in the redirect URL
+                $this->connect('https://'.$location['host'],$location['port'] ?? 443);
             }
             else
                 $this->connect('http://'.$location['host'],$location['port']);
 
-            $this->set_login($location['user'],$location['pass']);
+            // forward basic auth data if nothing else is specified in the redirect URL
+            $this->set_login($location['user'] ?? $this->remote_uname,$location['pass'] ?? $this->remote_passwd);
 
             $request = $location['path'];
-            $content = $location['query'];
+            // default to an empty string if not available
+            $content = $location['query'] ?? '';
 
             if ( strlen($request) < 1 )
             {
