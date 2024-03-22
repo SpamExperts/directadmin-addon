@@ -67,7 +67,7 @@ class DirectAdmin_API {
                 if ($setting != 'internal')
                     continue;
 
-                $value = substr($line, strlen($setting)+1);
+                $value = strtok(substr($line, strlen($setting)+1), "&");
                 if ($value == 'no') {
                     $isRemote = TRUE;
                 }
@@ -81,20 +81,28 @@ class DirectAdmin_API {
             if ($recordType != 'MX')
                 continue;
 
-            parse_str(substr($line, strlen($recordType)+1), $details);
-            foreach ($details as $record => $v){
-                $fixedRecord = str_replace('_', '.', $record);
+            $recordValue = substr($line, strlen($recordType) + 1);
+            if (empty($recordValue))
+                continue;
+
+            $entries = array_map(function ($entry) {
+                $parts = explode(' ', rawurldecode($entry));
+                return end($parts);
+            }, explode('&', $recordValue));
+            foreach ($entries as $entry) {
 
                 // If the checkbox at CMD_API_DNS_MX isn't checked make sure we run an additional test
-                if ($isRemote == FALSE) {
-                    if (substr($fixedRecord, -1) == '.' && strpos($fixedRecord, $domain) === false) {
+                if ($isRemote === FALSE) {
+                    if (substr($entry, -1) === '.' && strpos($entry, $domain) === false) {
                         $isRemote = TRUE;
                     }
                 }
 
                 $records[] = array(
-                    'original'	=> $fixedRecord,
-                    'full'		=> substr($fixedRecord, -1) == '.' ? substr($fixedRecord, 0, -1) : $fixedRecord . '.' . $domain,
+                    'original'	=> $entry,
+                    'full'		=> substr($entry, -1) === '.'
+                        ? substr($entry, 0, -1)
+                        : $entry . '.' . $domain,
                     'isRemote'	=> $isRemote,
                 );
             }
@@ -270,5 +278,4 @@ class DirectAdmin_API {
 
         return $sock;
     }
-
 }
