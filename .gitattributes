@@ -1,4 +1,4 @@
 .github export-ignore
 .gitignore export-ignore
 .gitattributes export-ignore
-plugin.conf.new export-subst
+plugin.conf export-subst
