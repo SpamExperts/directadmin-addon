@@ -12,9 +12,9 @@ for hook in domain_create_post domain_destroy_post domain_pointer_create_post do
   cmp --silent $installedhook "${DOCUMENT_ROOT}hooks/$hook.sh"
   if [ $? -ne 0 ]; then
     echo "WARNING! - hook file '$hook.sh' differs from the plugin's one. Skipping it.<br/>"
-    else
-        rm "$pluginpath../../scripts/custom/$hook.sh"
-    fi
+  else
+    rm "$pluginpath../../scripts/custom/$hook.sh"
+  fi
 done
 
 echo "Plugin Un-Installed!"
