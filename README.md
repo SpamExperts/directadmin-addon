@@ -42,3 +42,4 @@ Once the key is ready use it as the `password` configuration directive value in 
 #### Troubleshooting
 
 If you experience issues when using a Login Key it may be useful to turn DirectAdmin into a debug mode and troubleshoot the issue. More info on this can be found [here](https://help.directadmin.com/item.php?id=293).
+
